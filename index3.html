@@ -2,6 +2,7 @@
     <!-- https://5balloons.info/post-form-data-to-api-using-axios-in-vuejs/ 
     https://5balloons.info/post-form-data-to-api-using-axios-in-vuejs/
     https://codepen.io/edvaldolima/pen/evzWor
+    https://gist.github.com/richardblondet/ce87a397ef669d4d25dd21ea02b9dda1
     -->
 <head>
   <title>Form konversi prodi Informatika 2022</title>
@@ -41,13 +42,14 @@
                     <th>Durasi</th>
                     <th>Kode Matkul</th>
                     <th>Nama Matkul</th>
+                    <th>SKS Matkul</th>
                     <th>Nilai Angka</th>
                     <th>Nilai Huruf</th>
                     <th>Action</th>
                 </tr>
                 </thead>
                 <tbody>
-                   <tr v-for='(user, index) in users'>                            
+                   <tr v-for='(user, index) in items'>                            
                     <td>
                     <input  v-model="user.objective"  class="form-control" type="text" />
                     </td>
@@ -59,6 +61,9 @@
                     </td>
                     <td>
                     <input v-model="user.matkul" class="form-control" type="text"/>
+                    </td>
+                    <td>
+                    <input v-model="user.sks" class="form-control" type="text"/>
                     </td>
                     <td>
                     <input v-model="user.angka" class="form-control" type="text"/>
@@ -84,29 +89,77 @@
 </div>
 <script >
  var app = new Vue({
+     
    el: '#app',
    data: {
     access_id:"",
     access_id_message:"ew",
     profile:{name:'waiting...',nim:'waiting..',kegiatan:'waiting..'},
-    users:[{name:'',email:'',mobno:'',objective:'',durasi:'',kode:'',matkul:'',angka:'',huruf:''}]     
+    items:[{id:'',objective:'',durasi:'',kode:'',matkul:'',sks:'',angka:'',huruf:''}]     
    },
    methods: {
-    addRow: function() {      
-       this.users.push({name:'',email:'',mobno:'',objective:'',durasi:'',kode:'',matkul:'',angka:'',huruf:''})
+    addRow: function() {   
+       var randomId = Math.floor(100000 + Math.random() * 900000);
+       this.items.push({id:randomId, objective:'',durasi:'',kode:'',matkul:'',sks:'',angka:'',huruf:''})
     },
     deleteRow(index){    
-        this.users.splice(index,1);             
+        this.items.splice(index,1);             
     },
     submitForm(){
-        console.log("klik "+JSON.stringify(this.users));
+        console.log("klik "+JSON.stringify(this.items));
     },
-    onClickButtonCari(){
-        console.log("klik "+JSON.stringify(this.access_id));
-        access_id_message="hasil tidak ditemukan";
-    }    
+    onClickButtonCari 
    }   
   })
+  function onClickButtonCari(){
+        console.log("klik "+JSON.stringify(this.access_id));
+        access_id_message="hasil tidak ditemukan";
+
+        var baseUrl = "https://script.google.com/macros/s/AKfycby7GHvElJlwVepJl-d2iq66ZhtNcBoesml8rZVekFK7VIDivQ4qzCr-jLPeqfdLo_Xr/exec"
+        var urlProfile = baseUrl+"?action=1&sr=001/FIK-IF/AMIKOM/REK.STUIND/07/2021";
+        var urlKonversi = baseUrl+"?action=2&sr=001/FIK-IF/AMIKOM/REK.STUIND/07/2021";
+        axios.get(urlProfile)
+            .then(function (response) {
+                // handle success
+                if(response.data.status){
+                    
+                var _profil=response.data.data.shift();
+                app.profile.name=_profil.nama;
+                app.profile.nim=_profil.nim;
+                app.profile.kegiatan=_profil.jenis_rekomendasi;
+
+                }
+            })
+            .catch(function (error) {
+                // handle error
+                console.log(error);
+            })
+            .then(function () {
+                // always executed
+            });
+        axios.get(urlKonversi)
+            .then(function (response) {
+                // handle success
+                if(response.data.status){
+                
+                
+                var _items=response.data.data;
+                app.items=[];
+                _items.forEach(function(e,i){
+                    app.items.push({id:e.id,objective:e.objective,durasi:e.durasi,kode:e.kode_makul,sks:e.sks,matkul:e.makul,angka:e.angka,huruf:e.huruf})
+                    console.log(e);
+                });
+
+                }
+            })
+            .catch(function (error) {
+                // handle error
+                console.log(error);
+            })
+            .then(function () {
+                // always executed
+            });
+ }   
  </script>
  </body>
  </html> 
