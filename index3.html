@@ -10,6 +10,7 @@
    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>  
    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
    <meta name="referrer" content="same-origin">
 </head>
 <body>
@@ -18,7 +19,7 @@
         <h1 style="text-align: center;">PENGAJUAN KLAIM KONVERSI SKS - MBKM</h1>
 </div>
 <div class="container" id="app">  
-    <input v-model="access_id" placeholder="ACCESS ID">
+    <input v-model="access_id" placeholder="Surat Tugas">
     <button v-on:click="onClickButtonCari">Cari</button>
     <br>
     <p style="white-space: pre-line;">{{ access_id_message }}</p>
@@ -34,7 +35,7 @@
         <div class="panel-body"> 
             <i class="fa fa-plus pull-right"  @click="addRow" style="font-size:25px;color:#337ab7;cursor:pointer"></i>
             
-            <form v-on:submit.prevent="submitForm">
+            <form v-on:submit.prevent="submitFormPopup">
             <table class="table table-bordered">
             <thead class="text text-success">
                 <tr>                            
@@ -93,7 +94,7 @@
    el: '#app',
    data: {
     access_id:"",
-    access_id_message:"ew",
+    access_id_message:"001/FIK-IF/AMIKOM/REK.STUIND/07/2021",
     profile:{name:'waiting...',nim:'waiting..',kegiatan:'waiting..',email:'',no_surat:''},
     items:[{id:'',objective:'',durasi:'',kode:'',matkul:'',sks:'',angka:'',huruf:'',email:'',no_surat:'',status:''}]     
    },
@@ -106,21 +107,59 @@
                         no_surat:app.profile.no_surat,status:''});
         console.log("add "+this.items);
     },
-    deleteRow(index){   
-        this.items[index].status="delete";
-        // this.items.splice(index,1);             
+    deleteRow(index){
+        Swal.fire({
+            title: 'Yakin dihapus?',
+            text: "Proses tidak bisa diualng",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Ya, hapus!'
+            }).then((result) => {
+            if (result.isConfirmed) {
+                var item = this.items[index];
+                item.status='delete'
+                Vue.set(this.items,index,item)  
+
+                Swal.fire(
+                'Deleted!',
+                'SKS Konversi berhasil dihapus.',
+                'success'
+                )
+            }
+            })   
+        // var item = this.items[index];
+        // item.status='delete'
+        // Vue.set(this.items,index,item)        
     },
-    submitForm,
+    submitFormPopup(){
+        Swal.fire({
+            title: 'Data akan disimpan?',
+            text: "Periksa dengan teliti",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Ya, Submit'
+            }).then((result) => {
+            if (result.isConfirmed) {
+                 submitForm;
+            }
+            }) 
+    },
     onClickButtonCari 
    }   
   })
   function onClickButtonCari(){
-        console.log("klik "+JSON.stringify(this.access_id));
-        access_id_message="hasil tidak ditemukan";
+        console.log(app.access_id)
+        Swal.fire("Tunggu masih mencari...")
 
         var baseUrl = "https://script.google.com/macros/s/AKfycbyB2FCJ15YeWHGVxMIGtVZVL9hd-X5N7fHjFcU1vjq_F-v5cktzVCyl1kW12jvbywtv/exec"
-        var urlProfile = baseUrl+"?action=1&sr=001/FIK-IF/AMIKOM/REK.STUIND/07/2021";
-        var urlKonversi = baseUrl+"?action=2&sr=001/FIK-IF/AMIKOM/REK.STUIND/07/2021";
+        // var urlProfile = baseUrl+"?action=1&sr=001/FIK-IF/AMIKOM/REK.STUIND/07/2021";
+        // var urlKonversi = baseUrl+"?action=2&sr=001/FIK-IF/AMIKOM/REK.STUIND/07/2021";
+        var urlProfile = baseUrl+"?action=1&sr="+app.access_id;
+        var urlKonversi = baseUrl+"?action=2&sr="+app.access_id;
         axios.get(urlProfile)
             .then(function (response) {
                 // handle success
