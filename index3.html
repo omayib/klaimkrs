@@ -10,7 +10,7 @@
    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>  
    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
- 
+   <meta name="referrer" content="same-origin">
 </head>
 <body>
 <div class="container">
@@ -51,25 +51,25 @@
                 <tbody>
                    <tr v-for='(user, index) in items'>                            
                     <td>
-                    <input  v-model="user.objective"  class="form-control" type="text" />
+                    <input  v-model="user.objective"  class="form-control" type="text" :disabled="user.status==='delete'" />
                     </td>
                     <td>
-                    <input v-model="user.durasi" class="form-control" type="text" />
+                    <input v-model="user.durasi" class="form-control" type="text" :disabled="user.status==='delete'" />
                     </td>
                     <td>
-                    <input v-model="user.kode" class="form-control" type="text"/>
+                    <input v-model="user.kode" class="form-control" type="text" :disabled="user.status==='delete'"/>
                     </td>
                     <td>
-                    <input v-model="user.matkul" class="form-control" type="text"/>
+                    <input v-model="user.matkul" class="form-control" type="text" :disabled="user.status==='delete'"/>
                     </td>
                     <td>
-                    <input v-model="user.sks" class="form-control" type="text"/>
+                    <input v-model="user.sks" class="form-control" type="text" :disabled="user.status==='delete'"/>
                     </td>
                     <td>
-                    <input v-model="user.angka" class="form-control" type="text"/>
+                    <input v-model="user.angka" class="form-control" type="text" :disabled="user.status==='delete'"/>
                     </td>
                     <td>
-                    <input v-model="user.huruf" class="form-control" type="text"/>
+                    <input v-model="user.huruf" class="form-control" type="text" :disabled="user.status==='delete'"/>
                     </td>
                     <td>
                     <i  @click="deleteRow(index)" class="fa fa-remove" style="font-size:25px;color:red;cursor:pointer"></i>
@@ -94,20 +94,23 @@
    data: {
     access_id:"",
     access_id_message:"ew",
-    profile:{name:'waiting...',nim:'waiting..',kegiatan:'waiting..'},
-    items:[{id:'',objective:'',durasi:'',kode:'',matkul:'',sks:'',angka:'',huruf:''}]     
+    profile:{name:'waiting...',nim:'waiting..',kegiatan:'waiting..',email:'',no_surat:''},
+    items:[{id:'',objective:'',durasi:'',kode:'',matkul:'',sks:'',angka:'',huruf:'',email:'',no_surat:'',status:''}]     
    },
    methods: {
     addRow: function() {   
        var randomId = Math.floor(100000 + Math.random() * 900000);
-       this.items.push({id:randomId, objective:'',durasi:'',kode:'',matkul:'',sks:'',angka:'',huruf:''})
+       this.items.push({id:randomId, objective:'',durasi:'',
+                        kode:'',matkul:'',sks:'',
+                        angka:'',huruf:'',email:app.profile.email,
+                        no_surat:app.profile.no_surat,status:''});
+        console.log("add "+this.items);
     },
-    deleteRow(index){    
-        this.items.splice(index,1);             
+    deleteRow(index){   
+        this.items[index].status="delete";
+        // this.items.splice(index,1);             
     },
-    submitForm(){
-        console.log("klik "+JSON.stringify(this.items));
-    },
+    submitForm,
     onClickButtonCari 
    }   
   })
@@ -115,7 +118,7 @@
         console.log("klik "+JSON.stringify(this.access_id));
         access_id_message="hasil tidak ditemukan";
 
-        var baseUrl = "https://script.google.com/macros/s/AKfycby7GHvElJlwVepJl-d2iq66ZhtNcBoesml8rZVekFK7VIDivQ4qzCr-jLPeqfdLo_Xr/exec"
+        var baseUrl = "https://script.google.com/macros/s/AKfycbyB2FCJ15YeWHGVxMIGtVZVL9hd-X5N7fHjFcU1vjq_F-v5cktzVCyl1kW12jvbywtv/exec"
         var urlProfile = baseUrl+"?action=1&sr=001/FIK-IF/AMIKOM/REK.STUIND/07/2021";
         var urlKonversi = baseUrl+"?action=2&sr=001/FIK-IF/AMIKOM/REK.STUIND/07/2021";
         axios.get(urlProfile)
@@ -127,6 +130,8 @@
                 app.profile.name=_profil.nama;
                 app.profile.nim=_profil.nim;
                 app.profile.kegiatan=_profil.jenis_rekomendasi;
+                app.profile.email=_profil.email;
+                app.profile.no_surat=_profil.no_surat;
 
                 }
             })
@@ -146,8 +151,10 @@
                 var _items=response.data.data;
                 app.items=[];
                 _items.forEach(function(e,i){
-                    app.items.push({id:e.id,objective:e.objective,durasi:e.durasi,kode:e.kode_makul,sks:e.sks,matkul:e.makul,angka:e.angka,huruf:e.huruf})
-                    console.log(e);
+                    app.items.push({id:e.id,objective:e.objective,durasi:e.durasi,
+                                kode:e.kode_makul, sks:e.sks, matkul:e.makul,
+                                angka:e.angka,huruf:e.huruf,email:e.email,
+                                no_surat:e.no_surat});
                 });
 
                 }
@@ -160,6 +167,40 @@
                 // always executed
             });
  }   
+ function submitForm(){
+        var baseUrl = "https://script.google.com/macros/s/AKfycbyB2FCJ15YeWHGVxMIGtVZVL9hd-X5N7fHjFcU1vjq_F-v5cktzVCyl1kW12jvbywtv/exec"
+   
+        var urlKonversi = baseUrl+"?action=insert";
+        var payload = {items:app.items,profile:app.profile};
+        console.log(payload);
+        axios({
+            method: "post",
+            url: urlKonversi,
+            data: app.items,
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                        "Access-Control-Allow-Origin": "*"
+            })
+            .then(function (response) {
+                //handle success
+                console.log(response);
+            })
+            .catch(function (response) {
+                //handle error
+                console.log(response);
+            });
+        // axios.post(urlKonversi,app.items,paramsHeader)
+        //     .then(function (response) {
+        //         // handle success
+        //         console.log(JSON.stringify(response));
+        //     })
+        //     .catch(function (error) {
+        //         // handle error
+        //         console.log(error);
+        //     })
+        //     .then(function () {
+        //         // always executed
+        //     });
+ }
  </script>
  </body>
  </html> 
