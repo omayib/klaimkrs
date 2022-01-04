@@ -3,6 +3,7 @@
     https://5balloons.info/post-form-data-to-api-using-axios-in-vuejs/
     https://codepen.io/edvaldolima/pen/evzWor
     https://gist.github.com/richardblondet/ce87a397ef669d4d25dd21ea02b9dda1
+    https://jsfiddle.net/ankurk91/w8y8k5wo/
     -->
 <head>
   <title>Form konversi prodi Informatika 2022</title>
@@ -11,6 +12,7 @@
    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>  
    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+   <script src="https://cdn.jsdelivr.net/npm/vue-loading-overlay@3"></script>
    <meta name="referrer" content="same-origin">
 </head>
 <body>
@@ -19,6 +21,7 @@
         <h1 style="text-align: center;">PENGAJUAN KLAIM KONVERSI SKS - MBKM</h1>
 </div>
 <div class="container" id="app">  
+    <loading :active.sync="visible" :can-cancel="true"></loading>
     <input v-model="access_id" placeholder="Surat Tugas">
     <button v-on:click="onClickButtonCari">Cari</button>
     <br>
@@ -28,6 +31,7 @@
       nama : {{profile.name}}<br>
       NIM : {{profile.nim}}<br>
       Kegiatan : {{profile.kegiatan}}
+
   </p>  
   <div class="panel-group">
     <div class="panel panel-primary">
@@ -89,15 +93,20 @@
     </div>
 </div>
 <script >
+Vue.use(VueLoading);
  var app = new Vue({
      
    el: '#app',
    data: {
+    visible:false,
     access_id:"",
     access_id_message:"001/FIK-IF/AMIKOM/REK.STUIND/07/2021",
     profile:{name:'waiting...',nim:'waiting..',kegiatan:'waiting..',email:'',no_surat:''},
     items:[{id:'',objective:'',durasi:'',kode:'',matkul:'',sks:'',angka:'',huruf:'',email:'',no_surat:'',status:''}]     
    },
+    components: {
+        Loading: VueLoading
+    },
    methods: {
     addRow: function() {   
        var randomId = Math.floor(100000 + Math.random() * 900000);
@@ -148,12 +157,16 @@
             }
             }) 
     },
-    onClickButtonCari 
-   }   
+    onClickButtonCari
+   }  
   })
   function onClickButtonCari(){
         console.log(app.access_id)
-        Swal.fire("Tunggu masih mencari...")
+        // Swal.fire("Tunggu masih mencari...")
+        let loader = this.$loading.show({
+                loader: 'dots'
+            });
+            setTimeout(() => loader.hide(), 3 * 1000)
 
         var baseUrl = "https://script.google.com/macros/s/AKfycbyB2FCJ15YeWHGVxMIGtVZVL9hd-X5N7fHjFcU1vjq_F-v5cktzVCyl1kW12jvbywtv/exec"
         // var urlProfile = baseUrl+"?action=1&sr=001/FIK-IF/AMIKOM/REK.STUIND/07/2021";
@@ -163,6 +176,7 @@
         axios.get(urlProfile)
             .then(function (response) {
                 // handle success
+                loader.hide()
                 if(response.data.status){
                     
                 var _profil=response.data.data.shift();
