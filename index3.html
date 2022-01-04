@@ -9,6 +9,7 @@
   <title>Form konversi prodi Informatika 2022</title>
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+   <link href="https://cdn.jsdelivr.net/npm/vue-loading-overlay@3/dist/vue-loading.css" rel="stylesheet">
    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>  
    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -20,7 +21,7 @@
         <p style="text-align: center;"><img src="https://drive.google.com/u/0/uc?id=19wQb9EOG5DIQJ3jTppyQf6NWoVTw-kVj&amp;export=download" alt="" width="750" /></p>
         <h1 style="text-align: center;">PENGAJUAN KLAIM KONVERSI SKS - MBKM</h1>
 </div>
-<div class="container" id="app">  
+<main class="container" id="app">  
     <loading :active.sync="visible" :can-cancel="true"></loading>
     <input v-model="access_id" placeholder="Surat Tugas">
     <button v-on:click="onClickButtonCari">Cari</button>
@@ -39,7 +40,7 @@
         <div class="panel-body"> 
             <i class="fa fa-plus pull-right"  @click="addRow" style="font-size:25px;color:#337ab7;cursor:pointer"></i>
             
-            <form v-on:submit.prevent="submitFormPopup">
+            <form v-on:submit.prevent="submitForm">
             <table class="table table-bordered">
             <thead class="text text-success">
                 <tr>                            
@@ -52,9 +53,9 @@
                     <th>Nilai Huruf</th>
                     <th>Action</th>
                 </tr>
-                </thead>
-                <tbody>
-                   <tr v-for='(user, index) in items'>                            
+            </thead>
+            <tbody>
+                <tr v-for='(user, index) in items'>                            
                     <td>
                     <input  v-model="user.objective"  class="form-control" type="text" :disabled="user.status==='delete'" />
                     </td>
@@ -80,18 +81,17 @@
                     <i  @click="deleteRow(index)" class="fa fa-remove" style="font-size:25px;color:red;cursor:pointer"></i>
                     </td>
                 </tr>                        
-        </tbody>
-    </table>
+            </tbody>
+            </table>
     
-    <div class="form-group">
-        <button class="btn btn-primary">Submit</button>
-    </div>
-</form>
-        </div>                        
-        </form>
+            <div class="form-group">
+                <button class="btn btn-primary">Submit</button>
+            </div>
+            </form>
+        </div> 
       </div>
     </div>
-</div>
+</main>
 <script >
 Vue.use(VueLoading);
  var app = new Vue({
@@ -142,7 +142,61 @@ Vue.use(VueLoading);
         // item.status='delete'
         // Vue.set(this.items,index,item)        
     },
-    submitFormPopup(){
+    submitForm,
+    onClickButtonCari
+   }  
+  })
+  function onClickButtonCari(){
+        console.log(app.access_id)
+        // Swal.fire("Tunggu masih mencari...")
+        let loader = this.$loading.show({
+                loader: 'dots'
+            });
+
+        var baseUrl = "https://script.google.com/macros/s/AKfycbyB2FCJ15YeWHGVxMIGtVZVL9hd-X5N7fHjFcU1vjq_F-v5cktzVCyl1kW12jvbywtv/exec"
+        // var urlProfile = baseUrl+"?action=1&sr=001/FIK-IF/AMIKOM/REK.STUIND/07/2021";
+        // var urlKonversi = baseUrl+"?action=2&sr=001/FIK-IF/AMIKOM/REK.STUIND/07/2021";
+        var urlProfile = baseUrl+"?action=1&sr="+app.access_id;
+        var urlKonversi = baseUrl+"?action=2&sr="+app.access_id;
+        let endpoints = [urlProfile,urlKonversi];
+        axios.all(endpoints.map((endpoint)=>axios.get(endpoint))).then(
+            axios.spread((profile,konversi)=>{
+                if(profile){
+                    var _profil=profile.data.data.shift();
+                    app.profile.name=_profil.nama;
+                    app.profile.nim=_profil.nim;
+                    app.profile.kegiatan=_profil.jenis_rekomendasi;
+                    app.profile.email=_profil.email;
+                    app.profile.no_surat=_profil.no_surat;
+                }
+                if(konversi){
+                    var _items=konversi.data.data;
+                    app.items=[];
+                    _items.forEach(function(e,i){
+                        app.items.push({id:e.id,objective:e.objective,durasi:e.durasi,
+                                    kode:e.kode_makul, sks:e.sks, matkul:e.makul,
+                                    angka:e.angka,huruf:e.huruf,email:e.email,
+                                    no_surat:e.no_surat});
+                    });
+                }
+                loader.hide();
+            })
+        ).catch(function (error) {
+                // handle error
+                console.log(error);
+                loader.hide()
+            })
+        .then(function () {
+        });
+ }   
+ function submitForm(){
+        var baseUrl = "https://script.google.com/macros/s/AKfycbyB2FCJ15YeWHGVxMIGtVZVL9hd-X5N7fHjFcU1vjq_F-v5cktzVCyl1kW12jvbywtv/exec"
+   
+        var urlKonversi = baseUrl+"?action=insert";
+        var payload = {items:app.items,profile:app.profile};
+        console.log("payload");
+       
+        
         Swal.fire({
             title: 'Data akan disimpan?',
             text: "Periksa dengan teliti",
@@ -153,106 +207,32 @@ Vue.use(VueLoading);
             confirmButtonText: 'Ya, Submit'
             }).then((result) => {
             if (result.isConfirmed) {
-                 submitForm;
-            }
-            }) 
-    },
-    onClickButtonCari
-   }  
-  })
-  function onClickButtonCari(){
-        console.log(app.access_id)
-        // Swal.fire("Tunggu masih mencari...")
-        let loader = this.$loading.show({
-                loader: 'dots'
-            });
-            setTimeout(() => loader.hide(), 3 * 1000)
-
-        var baseUrl = "https://script.google.com/macros/s/AKfycbyB2FCJ15YeWHGVxMIGtVZVL9hd-X5N7fHjFcU1vjq_F-v5cktzVCyl1kW12jvbywtv/exec"
-        // var urlProfile = baseUrl+"?action=1&sr=001/FIK-IF/AMIKOM/REK.STUIND/07/2021";
-        // var urlKonversi = baseUrl+"?action=2&sr=001/FIK-IF/AMIKOM/REK.STUIND/07/2021";
-        var urlProfile = baseUrl+"?action=1&sr="+app.access_id;
-        var urlKonversi = baseUrl+"?action=2&sr="+app.access_id;
-        axios.get(urlProfile)
-            .then(function (response) {
-                // handle success
-                loader.hide()
-                if(response.data.status){
-                    
-                var _profil=response.data.data.shift();
-                app.profile.name=_profil.nama;
-                app.profile.nim=_profil.nim;
-                app.profile.kegiatan=_profil.jenis_rekomendasi;
-                app.profile.email=_profil.email;
-                app.profile.no_surat=_profil.no_surat;
-
-                }
-            })
-            .catch(function (error) {
-                // handle error
-                console.log(error);
-            })
-            .then(function () {
-                // always executed
-            });
-        axios.get(urlKonversi)
-            .then(function (response) {
-                // handle success
-                if(response.data.status){
-                
-                
-                var _items=response.data.data;
-                app.items=[];
-                _items.forEach(function(e,i){
-                    app.items.push({id:e.id,objective:e.objective,durasi:e.durasi,
-                                kode:e.kode_makul, sks:e.sks, matkul:e.makul,
-                                angka:e.angka,huruf:e.huruf,email:e.email,
-                                no_surat:e.no_surat});
+                let loader = this.$loading.show({
+                    loader: 'dots'
                 });
+                axios({
+                    method: "post",
+                    url: urlKonversi,
+                    data: app.items,
+                    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                                "Access-Control-Allow-Origin": "*"
+                    })
+                    .then(function (response) {
+                        //handle success
+                        console.log(response);
+                        loader.hide();
+                    })
+                    .catch(function (response) {
+                        //handle error
+                        console.log(response);
+                        loader.hide();
+                    });
 
-                }
-            })
-            .catch(function (error) {
-                // handle error
-                console.log(error);
-            })
-            .then(function () {
-                // always executed
-            });
- }   
- function submitForm(){
-        var baseUrl = "https://script.google.com/macros/s/AKfycbyB2FCJ15YeWHGVxMIGtVZVL9hd-X5N7fHjFcU1vjq_F-v5cktzVCyl1kW12jvbywtv/exec"
-   
-        var urlKonversi = baseUrl+"?action=insert";
-        var payload = {items:app.items,profile:app.profile};
-        console.log(payload);
-        axios({
-            method: "post",
-            url: urlKonversi,
-            data: app.items,
-            headers: { "Content-Type": "application/x-www-form-urlencoded" },
-                        "Access-Control-Allow-Origin": "*"
-            })
-            .then(function (response) {
-                //handle success
-                console.log(response);
-            })
-            .catch(function (response) {
-                //handle error
-                console.log(response);
-            });
-        // axios.post(urlKonversi,app.items,paramsHeader)
-        //     .then(function (response) {
-        //         // handle success
-        //         console.log(JSON.stringify(response));
-        //     })
-        //     .catch(function (error) {
-        //         // handle error
-        //         console.log(error);
-        //     })
-        //     .then(function () {
-        //         // always executed
-        //     });
+            }
+
+            }) 
+
+        
  }
  </script>
  </body>
