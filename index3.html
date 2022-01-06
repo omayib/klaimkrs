@@ -33,7 +33,13 @@
       NIM : {{profile.nim}}<br>
       Kegiatan : {{profile.kegiatan}}
 
-  </p>  
+  </p>
+  <div>
+    <label>File
+        <input type="file" id="file" ref="file" @change="handleFileUpload"/>
+      </label>
+      <button @click="submitFile">Submit</button>
+  </div>  
   <div class="panel-group">
     <div class="panel panel-primary">
      <div class="panel-heading">Form konversi prodi Informatika 2022</div>                  
@@ -98,6 +104,7 @@ Vue.use(VueLoading);
      
    el: '#app',
    data: {
+    file:"",
     visible:false,
     access_id:"",
     access_id_message:"001/FIK-IF/AMIKOM/REK.STUIND/07/2021",
@@ -143,7 +150,11 @@ Vue.use(VueLoading);
         // Vue.set(this.items,index,item)        
     },
     submitForm,
-    onClickButtonCari
+    onClickButtonCari,
+    submitFile,
+    handleFileUpload(){
+        this.file = this.$refs.file.files[0];
+      }
    }  
   })
   function onClickButtonCari(){
@@ -233,6 +244,49 @@ Vue.use(VueLoading);
             }) 
 
         
+ }
+ function submitFile(){
+     console.log("A");
+     let formData = new FormData();
+     formData.append('file', this.file);
+     const url = "https://script.google.com/macros/s/AKfycbyR7lNaFzjcE25mG7PIIhun0OayGp_LUnubYB3hsQbh5IOcaslR1oxJMrZdzy1XJo6BTg/exec";  // <--- Please set the URL of Web Apps.
+     const qs = new URLSearchParams({filename:this.file.name, mimeType: this.file.type});
+//https://script.google.com/macros/s/AKfycbxP94QL1NWG6zHGeL3-BANX_q-Itcon7FQ031ubgFuzblDrq0Oc5HJKmAN-RSmMfPoOcw/exec?filename=line.png&mimeType=image/png
+    
+    // axios.post(`${url}?${qs}`,
+    //             {data: JSON.stringify([...new Int8Array(f.target.result)])},
+    //             {
+    //             headers: {
+    //                 'Content-Type': 'multipart/form-data' ,
+    //                 "Access-Control-Allow-Origin": "*"}
+    //             })
+    //     .then(function(r){
+    //       console.log('SUCCESS!!'+r);
+    //     })
+    //     .catch(function(r){
+    //       console.log('FAILURE!!'+r);
+    //     });
+
+    const fr = new FileReader();
+    fr.readAsArrayBuffer(this.file);
+    fr.onload = f => {
+        // fetch(`${url}?${qs}`, {method: "POST", redirect:'follow',mode: "no-cors", body: JSON.stringify([...new Int8Array(f.target.result)])})
+        // .then(res => console.log(res))
+        // .then(e => console.log("e: "+e))  // <--- You can retrieve the returned value here.
+        // .catch(err => console.log(err));
+        axios({
+                method: "post",
+                url: `${url}?${qs}`,
+                data: JSON.stringify([...new Int8Array(f.target.result)])
+            }).then(function(r){
+                console.log('SUCCESS!!'+JSON.stringify(r.data));
+                }).then(re=>console.log(re))
+                .catch(function(r){
+                console.log('FAILURE!!'+r);
+                });
+        
+    }
+    
  }
  </script>
  </body>
