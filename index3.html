@@ -115,10 +115,8 @@
 </main>
 <script >
  Vue.use(VueLoading);
- var key="AKfycbxD7NUO-fgqwDpuHJ6WsqWCmVHCo0Pg8FpLSsGCnB-4bAQ2LVMNEUegfkBlsYUDjSVK";
- var keyUpload="AKfycbyR7lNaFzjcE25mG7PIIhun0OayGp_LUnubYB3hsQbh5IOcaslR1oxJMrZdzy1XJo6BTg";
+ var key="AKfycbwCjOc-bVepcPpUBc8WXi-wGdbVA4YBP9On_9wSzXgVNPe0u4c3PK7ay5sBUeTxggGL";
  var baseUrl=`https://script.google.com/macros/s/${key}/exec`;
- var baseUrlUpload=`https://script.google.com/macros/s/${keyUpload}/exec`;
  var app = new Vue({
      
    el: '#app',
@@ -274,17 +272,21 @@
     let loader = this.$loading.show({
                 loader: 'dots'
             });
-    const qs = new URLSearchParams({filename:this.fileSertifikat.name, mimeType: this.fileSertifikat.type, action:7});
+    const qs = new URLSearchParams({filename:this.fileSertifikat.name, 
+                                    mimeType: this.fileSertifikat.type, 
+                                    action:7,
+                                    noSurat:this.profile.no_surat,
+                                    jenis:'sertifikat'});
     const fr = new FileReader();
     fr.readAsArrayBuffer(this.fileSertifikat);
     fr.onload = f => {
         axios({
                 method: "post",
                 url: `${baseUrl}?${qs}`,
-                data: JSON.stringify([...new Int8Array(f.target.result)])
+                data: JSON.stringify([...new Int8Array(f.target.result)])                               
             }).then(function(r){
                 app.fileUrlSertifikat = r.data.fileUrl;
-                console.log(app.fileUrlSertifikat);
+                console.log(JSON.stringify(r.data));
                 loader.hide();
                 Swal.fire(
                     'Good job!',
@@ -292,8 +294,8 @@
                     'success'
                     )
                 })
-            .then(re=> loader.hide())
-            .catch(error =>loader.hide());
+            .then(re=>{ loader.hide(); console.log(re)})
+            .catch(error =>{ loader.hide(); console.log(error)});
         
     }
  }
@@ -301,7 +303,11 @@
     let loader = this.$loading.show({
                 loader: 'dots'
             });
-    const qs = new URLSearchParams({filename:this.fileKontrak.name, mimeType: this.fileKontrak.type, action:7});
+    const qs = new URLSearchParams({filename:this.fileKontrak.name, 
+                                    mimeType: this.fileKontrak.type, 
+                                    action:7,
+                                    noSurat:this.profile.no_surat,
+                                    jenis:'kontrakkonversi'});
     const fr = new FileReader();
     fr.readAsArrayBuffer(this.fileKontrak);
     fr.onload = f => {
@@ -310,8 +316,7 @@
                 url: `${baseUrl}?${qs}`,
                 data: JSON.stringify([...new Int8Array(f.target.result)])
             }).then(function(r){
-                app.fileKontrak = r.data.fileUrl;
-                console.log(app.fileKontrak);
+                app.fileUrlKontrakKonversi = r.data.fileUrl;
                 loader.hide();
                 Swal.fire(
                     'Good job!',
