@@ -4,6 +4,7 @@
     https://codepen.io/edvaldolima/pen/evzWor
     https://gist.github.com/richardblondet/ce87a397ef669d4d25dd21ea02b9dda1
     https://jsfiddle.net/ankurk91/w8y8k5wo/
+    https://serversideup.net/uploading-files-vuejs-axios/
     -->
 <head>
   <title>Form konversi prodi Informatika 2022</title>
@@ -34,11 +35,25 @@
       Kegiatan : {{profile.kegiatan}}
 
   </p>
-  <div>
-    <label>File
-        <input type="file" id="file" ref="file" @change="handleFileUpload"/>
-      </label>
-      <button @click="submitFile">Submit</button>
+  <div class="panel-group">
+    <div class="panel panel-primary">
+        <div class="panel-heading">Bukti kegiatan</div>                 
+        <div class="panel-body">  
+            <div class="container">
+                <label>File Sertifikat
+                    <input type="file" @change="handleFileUploadSertifikat( $event )"/>
+                </label>
+                <button @click="submitFileSertifikat">Submit</button>
+            </div>  
+            <div class="container">
+                <label>File Kontrak Konversi
+                    <input type="file"  @change="handleFileUploadKontrak( $event )"/>
+                </label>
+                <button @click="submitFileKontrak" >Submit</button>
+            </div>
+            </div>
+        </div>
+    </div>
   </div>  
   <div class="panel-group">
     <div class="panel panel-primary">
@@ -99,12 +114,19 @@
     </div>
 </main>
 <script >
-Vue.use(VueLoading);
+ Vue.use(VueLoading);
+ var key="AKfycbxD7NUO-fgqwDpuHJ6WsqWCmVHCo0Pg8FpLSsGCnB-4bAQ2LVMNEUegfkBlsYUDjSVK";
+ var keyUpload="AKfycbyR7lNaFzjcE25mG7PIIhun0OayGp_LUnubYB3hsQbh5IOcaslR1oxJMrZdzy1XJo6BTg";
+ var baseUrl=`https://script.google.com/macros/s/${key}/exec`;
+ var baseUrlUpload=`https://script.google.com/macros/s/${keyUpload}/exec`;
  var app = new Vue({
      
    el: '#app',
    data: {
-    file:"",
+    fileUrlSertifikat:"",
+    fileUrlKontrakKonversi:"",   
+    fileSertifikat:"",  
+    fileKontrak:"",
     visible:false,
     access_id:"",
     access_id_message:"001/FIK-IF/AMIKOM/REK.STUIND/07/2021",
@@ -151,25 +173,26 @@ Vue.use(VueLoading);
     },
     submitForm,
     onClickButtonCari,
-    submitFile,
-    handleFileUpload(){
-        this.file = this.$refs.file.files[0];
+    submitFileKontrak,
+    submitFileSertifikat,
+    handleFileUploadSertifikat(event){
+        this.fileSertifikat = event.target.files[0];
+        // this.file = this.$refs.file.files[0];
+      },
+    handleFileUploadKontrak(event){
+        this.fileKontrak = event.target.files[0];
       }
    }  
   })
   function onClickButtonCari(){
-        console.log(app.access_id)
-        // Swal.fire("Tunggu masih mencari...")
         let loader = this.$loading.show({
                 loader: 'dots'
             });
-
-        var baseUrl = "https://script.google.com/macros/s/AKfycbyB2FCJ15YeWHGVxMIGtVZVL9hd-X5N7fHjFcU1vjq_F-v5cktzVCyl1kW12jvbywtv/exec"
-        // var urlProfile = baseUrl+"?action=1&sr=001/FIK-IF/AMIKOM/REK.STUIND/07/2021";
-        // var urlKonversi = baseUrl+"?action=2&sr=001/FIK-IF/AMIKOM/REK.STUIND/07/2021";
+            
         var urlProfile = baseUrl+"?action=1&sr="+app.access_id;
         var urlKonversi = baseUrl+"?action=2&sr="+app.access_id;
         let endpoints = [urlProfile,urlKonversi];
+        console.log(endpoints);
         axios.all(endpoints.map((endpoint)=>axios.get(endpoint))).then(
             axios.spread((profile,konversi)=>{
                 if(profile){
@@ -201,9 +224,10 @@ Vue.use(VueLoading);
         });
  }   
  function submitForm(){
-        var baseUrl = "https://script.google.com/macros/s/AKfycbyB2FCJ15YeWHGVxMIGtVZVL9hd-X5N7fHjFcU1vjq_F-v5cktzVCyl1kW12jvbywtv/exec"
-   
-        var urlKonversi = baseUrl+"?action=insert";
+        // var baseUrl = `https://script.google.com/macros/s/${app.key}/exec`
+
+        // var urlKonversi = app.baseUrl+"?action=insert";
+        var urlKonversi = baseUrl+"?action=6";
         var payload = {items:app.items,profile:app.profile};
         console.log("payload");
        
@@ -216,7 +240,8 @@ Vue.use(VueLoading);
             confirmButtonColor: '#3085d6',
             cancelButtonColor: '#d33',
             confirmButtonText: 'Ya, Submit'
-            }).then((result) => {
+            })
+            .then((result) => {
             if (result.isConfirmed) {
                 let loader = this.$loading.show({
                     loader: 'dots'
@@ -245,48 +270,59 @@ Vue.use(VueLoading);
 
         
  }
- function submitFile(){
-     console.log("A");
-     let formData = new FormData();
-     formData.append('file', this.file);
-     const url = "https://script.google.com/macros/s/AKfycbyR7lNaFzjcE25mG7PIIhun0OayGp_LUnubYB3hsQbh5IOcaslR1oxJMrZdzy1XJo6BTg/exec";  // <--- Please set the URL of Web Apps.
-     const qs = new URLSearchParams({filename:this.file.name, mimeType: this.file.type});
-//https://script.google.com/macros/s/AKfycbxP94QL1NWG6zHGeL3-BANX_q-Itcon7FQ031ubgFuzblDrq0Oc5HJKmAN-RSmMfPoOcw/exec?filename=line.png&mimeType=image/png
-    
-    // axios.post(`${url}?${qs}`,
-    //             {data: JSON.stringify([...new Int8Array(f.target.result)])},
-    //             {
-    //             headers: {
-    //                 'Content-Type': 'multipart/form-data' ,
-    //                 "Access-Control-Allow-Origin": "*"}
-    //             })
-    //     .then(function(r){
-    //       console.log('SUCCESS!!'+r);
-    //     })
-    //     .catch(function(r){
-    //       console.log('FAILURE!!'+r);
-    //     });
-
+ function submitFileSertifikat(){
+    let loader = this.$loading.show({
+                loader: 'dots'
+            });
+    const qs = new URLSearchParams({filename:this.fileSertifikat.name, mimeType: this.fileSertifikat.type, action:7});
     const fr = new FileReader();
-    fr.readAsArrayBuffer(this.file);
+    fr.readAsArrayBuffer(this.fileSertifikat);
     fr.onload = f => {
-        // fetch(`${url}?${qs}`, {method: "POST", redirect:'follow',mode: "no-cors", body: JSON.stringify([...new Int8Array(f.target.result)])})
-        // .then(res => console.log(res))
-        // .then(e => console.log("e: "+e))  // <--- You can retrieve the returned value here.
-        // .catch(err => console.log(err));
         axios({
                 method: "post",
-                url: `${url}?${qs}`,
+                url: `${baseUrl}?${qs}`,
                 data: JSON.stringify([...new Int8Array(f.target.result)])
             }).then(function(r){
-                console.log('SUCCESS!!'+JSON.stringify(r.data));
-                }).then(re=>console.log(re))
-                .catch(function(r){
-                console.log('FAILURE!!'+r);
-                });
+                app.fileUrlSertifikat = r.data.fileUrl;
+                console.log(app.fileUrlSertifikat);
+                loader.hide();
+                Swal.fire(
+                    'Good job!',
+                    'Kamu berhasil mengunngah sertifikat',
+                    'success'
+                    )
+                })
+            .then(re=> loader.hide())
+            .catch(error =>loader.hide());
         
     }
-    
+ }
+ function submitFileKontrak(){
+    let loader = this.$loading.show({
+                loader: 'dots'
+            });
+    const qs = new URLSearchParams({filename:this.fileKontrak.name, mimeType: this.fileKontrak.type, action:7});
+    const fr = new FileReader();
+    fr.readAsArrayBuffer(this.fileKontrak);
+    fr.onload = f => {
+        axios({
+                method: "post",
+                url: `${baseUrl}?${qs}`,
+                data: JSON.stringify([...new Int8Array(f.target.result)])
+            }).then(function(r){
+                app.fileKontrak = r.data.fileUrl;
+                console.log(app.fileKontrak);
+                loader.hide();
+                Swal.fire(
+                    'Good job!',
+                    'Kamu berhasil mengunngah kontrak konversi',
+                    'success'
+                    )
+                })
+            .then(re=> loader.hide())
+            .catch(error =>loader.hide());
+        
+    }
  }
  </script>
  </body>
