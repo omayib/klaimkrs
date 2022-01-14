@@ -15,6 +15,9 @@
    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
    <script src="https://cdn.jsdelivr.net/npm/vue-loading-overlay@3"></script>
+   <!-- or point to a specific vue-select release -->
+<script src="https://unpkg.com/vue-select@3.0.0"></script>
+<link rel="stylesheet" href="https://unpkg.com/vue-select@3.0.0/dist/vue-select.css">
    <meta name="referrer" content="same-origin">
 </head>
 <body>
@@ -35,6 +38,61 @@
       Kegiatan : {{profile.kegiatan}}
 
   </p>
+  <div class="panel-group">
+      <div class="panel panel-primary">
+        <div class="panel-heading">STEP 1. PROFIL PESERTA</div>                 
+        <div class="panel-body">  
+
+            <form v-on:submit.prevent="submitProfil">
+                <table>
+                    <tbody>
+                        <tr>
+                            <td>
+                                Nama 
+                            </td>
+                            <td>
+                                <input v-model="access_id" placeholder="Surat Tugas">
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                NIM
+                            </td>
+                            <td>
+                                <input v-model="access_id" placeholder="Surat Tugas">
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                No. Surat Tugas
+                            </td>
+                            <td>
+                                <input v-model="access_id" placeholder="Surat Tugas">
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                Kegiatan {{kegiatanTerpilih}}
+                            </td>
+                            <td>
+                                <v-select 
+                                :options="opsiKegiatan" 
+                                label="title"
+                                v-model="kegiatanTerpilih"
+                              ></v-select>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </form>
+            <div class="form-group">
+                <button class="btn btn-primary">Submit</button>
+            </div>
+        </div>
+
+      </div>
+
+  </div>
   <div class="panel-group">
     <div class="panel panel-primary">
         <div class="panel-heading">Bukti kegiatan</div>                 
@@ -115,6 +173,7 @@
 </main>
 <script >
  Vue.use(VueLoading);
+ Vue.component('v-select', VueSelect.VueSelect);
  var key="AKfycbxD7NUO-fgqwDpuHJ6WsqWCmVHCo0Pg8FpLSsGCnB-4bAQ2LVMNEUegfkBlsYUDjSVK";
  var keyUpload="AKfycbyR7lNaFzjcE25mG7PIIhun0OayGp_LUnubYB3hsQbh5IOcaslR1oxJMrZdzy1XJo6BTg";
  var baseUrl=`https://script.google.com/macros/s/${key}/exec`;
@@ -123,6 +182,8 @@
      
    el: '#app',
    data: {
+    opsiKegiatan:["Studi Independen","Magang Bersertifikat","Bangkit","Pertukaran Pelajar"],
+    kegiatanTerpilih:"",
     fileUrlSertifikat:"",
     fileUrlKontrakKonversi:"",   
     fileSertifikat:"",  
@@ -134,7 +195,8 @@
     items:[{id:'',objective:'',durasi:'',kode:'',matkul:'',sks:'',angka:'',huruf:'',email:'',no_surat:'',status:''}]     
    },
     components: {
-        Loading: VueLoading
+        Loading: VueLoading,
+        
     },
    methods: {
     addRow: function() {   
