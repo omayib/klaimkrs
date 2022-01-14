@@ -43,7 +43,7 @@
         <div class="panel-heading">STEP 1. PROFIL PESERTA</div>                 
         <div class="panel-body">  
 
-            <form v-on:submit.prevent="submitProfil">
+            <form v-on:submit.prevent="submitEntry">
                 <table>
                     <tbody>
                         <tr>
@@ -51,7 +51,7 @@
                                 Nama 
                             </td>
                             <td>
-                                <input v-model="access_id" placeholder="Surat Tugas">
+                                <input v-model="entry_nama" placeholder="Nama lengkap">
                             </td>
                         </tr>
                         <tr>
@@ -59,7 +59,7 @@
                                 NIM
                             </td>
                             <td>
-                                <input v-model="access_id" placeholder="Surat Tugas">
+                                <input v-model="entry_nim" placeholder="19.11.1155x">
                             </td>
                         </tr>
                         <tr>
@@ -67,27 +67,35 @@
                                 No. Surat Tugas
                             </td>
                             <td>
-                                <input v-model="access_id" placeholder="Surat Tugas">
+                                <input v-model="entry_st" placeholder="contoh : 01/FIK/BANGKIT/2022">
                             </td>
                         </tr>
                         <tr>
                             <td>
-                                Kegiatan {{kegiatanTerpilih}}
+                                Email
+                            </td>
+                            <td>
+                                <input v-model="entry_email" placeholder="stefani@students.amikom.ac.id">
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                Kegiatan {{entry_kegiatan}}
                             </td>
                             <td>
                                 <v-select 
                                 :options="opsiKegiatan" 
                                 label="title"
-                                v-model="kegiatanTerpilih"
+                                v-model="entry_kegiatan"
                               ></v-select>
                             </td>
                         </tr>
                     </tbody>
                 </table>
+                <div class="form-group">
+                    <button class="btn btn-primary">Submit</button>
+                </div>
             </form>
-            <div class="form-group">
-                <button class="btn btn-primary">Submit</button>
-            </div>
         </div>
 
       </div>
@@ -95,7 +103,7 @@
   </div>
   <div class="panel-group">
     <div class="panel panel-primary">
-        <div class="panel-heading">Bukti kegiatan</div>                 
+        <div class="panel-heading">STEP 2. UNGGAH BUKTI KEGIATAN</div>                 
         <div class="panel-body">  
             <div class="container">
                 <label>File Sertifikat
@@ -115,7 +123,7 @@
   </div>  
   <div class="panel-group">
     <div class="panel panel-primary">
-     <div class="panel-heading">Form konversi prodi Informatika 2022</div>                  
+     <div class="panel-heading">STEP 3. FORM KONVERSI</div>                  
         <div class="panel-body"> 
             <i class="fa fa-plus pull-right"  @click="addRow" style="font-size:25px;color:#337ab7;cursor:pointer"></i>
             
@@ -174,7 +182,7 @@
 <script >
  Vue.use(VueLoading);
  Vue.component('v-select', VueSelect.VueSelect);
- var key="AKfycbxD7NUO-fgqwDpuHJ6WsqWCmVHCo0Pg8FpLSsGCnB-4bAQ2LVMNEUegfkBlsYUDjSVK";
+ var key="AKfycbxOohWGdEiZPjY-8EUUMIAwPZ9gIS_gPcETWu-OOKmBEalAnsLW1OYrRhB8f3IBeJ_6";
  var keyUpload="AKfycbyR7lNaFzjcE25mG7PIIhun0OayGp_LUnubYB3hsQbh5IOcaslR1oxJMrZdzy1XJo6BTg";
  var baseUrl=`https://script.google.com/macros/s/${key}/exec`;
  var baseUrlUpload=`https://script.google.com/macros/s/${keyUpload}/exec`;
@@ -183,7 +191,7 @@
    el: '#app',
    data: {
     opsiKegiatan:["Studi Independen","Magang Bersertifikat","Bangkit","Pertukaran Pelajar"],
-    kegiatanTerpilih:"",
+    entry_kegiatan:"",entry_nama:"",entry_nim:"",entry_email:"",entry_st:"",
     fileUrlSertifikat:"",
     fileUrlKontrakKonversi:"",   
     fileSertifikat:"",  
@@ -199,6 +207,7 @@
         
     },
    methods: {
+    submitEntry,
     addRow: function() {   
        var randomId = Math.floor(100000 + Math.random() * 900000);
        this.items.push({id:randomId, objective:'',durasi:'',
@@ -246,6 +255,33 @@
       }
    }  
   })
+  function submitEntry(){
+      console.log("a");
+      var dataTobeUpload ={
+          nama:this.entry_nama,
+          email:this.entry_email,
+          nim:this.entry_nim,
+          kegiatan:this.entry_kegiatan,
+          no_surat:this.entry_st
+      }
+    var urlProfile = `${baseUrl}?action=8`;
+                axios({
+                    method: "post",
+                    url: urlProfile,
+                    data: dataTobeUpload,
+                    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                                "Access-Control-Allow-Origin": "*"
+                    })
+                    .then(function (response) {
+                        //handle success
+                        console.log(response);
+                    })
+                    .catch(function (response) {
+                        //handle error
+                        console.log(response);
+                    });
+
+  }
   function onClickButtonCari(){
         let loader = this.$loading.show({
                 loader: 'dots'
