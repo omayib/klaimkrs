@@ -15,6 +15,9 @@
    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
    <script src="https://cdn.jsdelivr.net/npm/vue-loading-overlay@3"></script>
+   <!-- or point to a specific vue-select release -->
+<script src="https://unpkg.com/vue-select@3.0.0"></script>
+<link rel="stylesheet" href="https://unpkg.com/vue-select@3.0.0/dist/vue-select.css">
    <meta name="referrer" content="same-origin">
 </head>
 <body>
@@ -36,8 +39,71 @@
 
   </p>
   <div class="panel-group">
+      <div class="panel panel-primary">
+        <div class="panel-heading">STEP 1. PROFIL PESERTA</div>                 
+        <div class="panel-body">  
+
+            <form v-on:submit.prevent="submitEntry">
+                <table>
+                    <tbody>
+                        <tr>
+                            <td>
+                                Nama 
+                            </td>
+                            <td>
+                                <input v-model="entry_nama" placeholder="Nama lengkap">
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                NIM
+                            </td>
+                            <td>
+                                <input v-model="entry_nim" placeholder="19.11.1155x">
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                No. Surat Tugas
+                            </td>
+                            <td>
+                                <input v-model="entry_st" placeholder="contoh : 01/FIK/BANGKIT/2022">
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                Email
+                            </td>
+                            <td>
+                                <input v-model="entry_email" placeholder="stefani@students.amikom.ac.id">
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                Kegiatan
+                            </td>
+                            <td>
+                                <v-select 
+                                :options="opsiKegiatan" 
+                                label="title"
+                                v-model="entry_kegiatan"
+                              ></v-select>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div class="form-group">
+                    <button class="btn btn-primary">Submit</button>
+                </div>
+            </form>
+        </div>
+
+      </div>
+
+  </div>
+  <div class="panel-group">
     <div class="panel panel-primary">
-        <div class="panel-heading">Bukti kegiatan</div>                 
+        <div class="panel-heading">STEP 2. UNGGAH BUKTI KEGIATAN</div>                 
         <div class="panel-body">  
             <div class="container">
                 <label>File Sertifikat
@@ -57,7 +123,7 @@
   </div>  
   <div class="panel-group">
     <div class="panel panel-primary">
-     <div class="panel-heading">Form konversi prodi Informatika 2022</div>                  
+     <div class="panel-heading">STEP 3. FORM KONVERSI</div>                  
         <div class="panel-body"> 
             <i class="fa fa-plus pull-right"  @click="addRow" style="font-size:25px;color:#337ab7;cursor:pointer"></i>
             
@@ -115,12 +181,15 @@
 </main>
 <script >
  Vue.use(VueLoading);
- var key="AKfycbwCjOc-bVepcPpUBc8WXi-wGdbVA4YBP9On_9wSzXgVNPe0u4c3PK7ay5sBUeTxggGL";
+ Vue.component('v-select', VueSelect.VueSelect);
+ var key="AKfycbzLO8cEvqYeG_x-04W-bSuTGHrAcCdUW97DHPZUE8m1SbKgUHIbQhG_oxgR75367Wg";
  var baseUrl=`https://script.google.com/macros/s/${key}/exec`;
  var app = new Vue({
      
    el: '#app',
    data: {
+    opsiKegiatan:["Studi Independen","Magang Bersertifikat","Bangkit","Pertukaran Pelajar"],
+    entry_kegiatan:"",entry_nama:"",entry_nim:"",entry_email:"",entry_st:"",
     fileUrlSertifikat:"",
     fileUrlKontrakKonversi:"",   
     fileSertifikat:"",  
@@ -135,6 +204,7 @@
         Loading: VueLoading
     },
    methods: {
+    submitEntry,
     addRow: function() {   
        var randomId = Math.floor(100000 + Math.random() * 900000);
        this.items.push({id:randomId, objective:'',durasi:'',
@@ -175,13 +245,72 @@
     submitFileSertifikat,
     handleFileUploadSertifikat(event){
         this.fileSertifikat = event.target.files[0];
-        // this.file = this.$refs.file.files[0];
       },
     handleFileUploadKontrak(event){
         this.fileKontrak = event.target.files[0];
       }
    }  
   })
+  function submitEntry(){
+    var urlProfile = `${baseUrl}?action=8`;
+      var dataTobeUpload ={
+          nama:this.entry_nama,
+          email:this.entry_email,
+          nim:this.entry_nim,
+          kegiatan:this.entry_kegiatan,
+          no_surat:this.entry_st
+      }
+    if(this.entry_nama ==="" || 
+        this.entry_email ==="" || 
+        this.entry_nim ===""|| 
+        this.entry_kegiatan ===""|| 
+        this.entry_st ===""){
+            Swal.fire(
+                    'Ops!',
+                    'data masih kosong',
+                    'error'
+                    )
+    }else{
+        Swal.fire({
+            title: 'Data akan disimpan?',
+            text: "Periksa dengan teliti",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Ya, Submit'
+            })
+            .then((result) => {
+            if (result.isConfirmed) {
+                let loader = this.$loading.show({
+                    loader: 'dots'
+                });
+                axios({
+                    method: "post",
+                    url: urlProfile,
+                    data: dataTobeUpload,
+                    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                                "Access-Control-Allow-Origin": "*"
+                    })
+                    .then(function (response) {
+                        //handle success
+                        console.log(response);
+                        loader.hide();
+                    })
+                    .catch(function (response) {
+                        //handle error
+                        console.log(response);
+                        loader.hide();
+                    });
+
+            }
+
+        }) 
+    }
+    
+                
+
+  }
   function onClickButtonCari(){
         let loader = this.$loading.show({
                 loader: 'dots'
