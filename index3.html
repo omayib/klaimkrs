@@ -51,7 +51,7 @@
                                 Nama 
                             </td>
                             <td>
-                                <input v-model="profile.name" placeholder="Nama lengkap">
+                                <input v-model="profileDraft.name" placeholder="Nama lengkap">
                             </td>
                         </tr>
                         <tr>
@@ -59,7 +59,7 @@
                                 NIM
                             </td>
                             <td>
-                                <input v-model="profile.nim" placeholder="19.11.1155x">
+                                <input v-model="profileDraft.nim" placeholder="19.11.1155x">
                             </td>
                         </tr>
                         <tr>
@@ -67,7 +67,7 @@
                                 No. Surat Tugas
                             </td>
                             <td>
-                                <input v-model="profile.no_surat" placeholder="contoh : 01/FIK/BANGKIT/2022">
+                                <input v-model="profileDraft.no_surat" placeholder="contoh : 01/FIK/BANGKIT/2022">
                             </td>
                         </tr>
                         <tr>
@@ -75,7 +75,7 @@
                                 Email
                             </td>
                             <td>
-                                <input v-model="profile.email" placeholder="stefani@students.amikom.ac.id">
+                                <input v-model="profileDraft.email" placeholder="stefani@students.amikom.ac.id">
                             </td>
                         </tr>
                         <tr>
@@ -86,7 +86,7 @@
                                 <v-select 
                                 :options="opsiKegiatan" 
                                 label="title"
-                                v-model="profile.kegiatan"
+                                v-model="profileDraft.kegiatan"
                               ></v-select>
                             </td>
                         </tr>
@@ -182,7 +182,14 @@
 <script >
  Vue.use(VueLoading);
  Vue.component('v-select', VueSelect.VueSelect);
- var key="AKfycbxJ6UBEVdCLvk0pjINvZdzfMTU2UFkVxmdipFRCCc__7QDNBu6Gwxh3bVRRwTyRI8rJ";
+ const Toast = Swal.mixin({
+    toast: true,
+    position: 'top-end',
+    showConfirmButton: false,
+    timer: 3000,
+    timerProgressBar: true
+    })
+ var key="AKfycbyC8gSkitA2FN3n3DZziIMJla_4xSDRel5SEDiDNMmNXaI00Oa98Th-mWDC3N12YefX";
  var baseUrl=`https://script.google.com/macros/s/${key}/exec`;
  var app = new Vue({
      
@@ -196,6 +203,7 @@
     visible:false,
     access_id:"",
     access_id_message:"001/FIK-IF/AMIKOM/REK.STUIND/07/2021",
+    profileDraft:{name:'',nim:'',kegiatan:'',email:'',no_surat:''},
     profile:{name:'',nim:'',kegiatan:'',email:'',no_surat:''},
     items:[{id:'',objective:'',durasi:'',kode:'',matkul:'',sks:'',angka:'',huruf:'',email:'',no_surat:'',status:''}]     
    },
@@ -255,17 +263,17 @@
   function submitEntry(){
     var urlProfile = `${baseUrl}?action=8`;
       var dataTobeUpload ={
-          nama:this.profile.name,
-          email:this.profile.email,
-          nim:this.profile.nim,
-          kegiatan:this.profile.kegiatan,
-          no_surat:this.profile.no_surat
+          nama:this.profileDraft.name,
+          email:this.profileDraft.email,
+          nim:this.profileDraft.nim,
+          kegiatan:this.profileDraft.kegiatan,
+          no_surat:this.profileDraft.no_surat
       }
-    if(this.profile.name ==="" || 
-        this.profile.email ==="" || 
-        this.profile.nim ===""|| 
-        this.profile.kegiatan ===""|| 
-        this.profile.no_surat ===""){
+    if(this.profileDraft.name ==="" || 
+        this.profileDraft.email ==="" || 
+        this.profileDraft.nim ===""|| 
+        this.profileDraft.kegiatan ===""|| 
+        this.profileDraft.no_surat ===""){
             Swal.fire(
                     'Ops!',
                     'data masih kosong',
@@ -295,14 +303,34 @@
                     })
                     .then(function (response) {
                         //handle success
-                        console.log(response);
                         loader.hide();
+                        var _profil=response.data.data;
+                        console.log(_profil);
+                        if(_profil){
+                            Toast.fire({
+                                icon: 'success',
+                                title: 'Profil berhasil diperbarui'
+                                })
+                            
+                            app.profile.name=_profil.nama;
+                            app.profile.nim=_profil.nim;
+                            app.profile.kegiatan=_profil.kegiatan;
+                            app.profile.email=_profil.email;
+                            app.profile.no_surat=_profil.no_surat;
+
+                            app.profileDraft.name=_profil.nama;
+                            app.profileDraft.nim=_profil.nim;
+                            app.profileDraft.kegiatan=_profil.kegiatan;
+                            app.profileDraft.email=_profil.email;
+                            app.profileDraft.no_surat=_profil.no_surat;
+                        }else{
+                            clearProfile();
+                        }
                     })
                     .catch(function (response) {
                         //handle error
                         console.log(response);
                         loader.hide();
-                        clearProfile();
                     });
 
             }
@@ -325,12 +353,20 @@
                 loader.hide();
                 if(profile.data.data.length>0){
                     var _profil=profile.data.data.shift();
+                    console.log(_profil);
                     app.profile.name=_profil.nama;
                     app.profile.nim=_profil.nim;
                     app.profile.kegiatan=_profil.jenis_rekomendasi;
                     app.profile.email=_profil.email;
                     app.profile.no_surat=_profil.no_surat;
+
+                    app.profileDraft.name=_profil.nama;
+                    app.profileDraft.nim=_profil.nim;
+                    app.profileDraft.kegiatan=_profil.jenis_rekomendasi;
+                    app.profileDraft.email=_profil.email;
+                    app.profileDraft.no_surat=_profil.no_surat;
                 }else{
+                    clearProfile();
                     Swal.fire(
                     'Ops!',
                     'Profile tidak ditemukan. Lengkapi STEP 1',
@@ -390,10 +426,18 @@
                         //handle success
                         console.log(response);
                         loader.hide();
+                        Toast.fire({
+                            icon: 'success',
+                            title: 'Konversi berhasil diperbarui'
+                            })
                     })
                     .catch(function (response) {
                         //handle error
                         console.log(response);
+                        Swal.fire('Ops!',
+                            'Terjadi kesalahan, mungkin nomer surat tidak valid',
+                            'error'
+                            )
                         loader.hide();
                     });
 
@@ -404,6 +448,13 @@
         
  }
  function submitFileSertifikat(){
+    if(!this.fileSertifikat){
+        Swal.fire('Ops!',
+                    'File sertifikat belum dipilih',
+                    'error'
+                    )
+         return;
+    }
     let loader = this.$loading.show({
                 loader: 'dots'
             });
@@ -430,11 +481,24 @@
                     )
                 })
             .then(re=>{ loader.hide(); console.log(re)})
-            .catch(error =>{ loader.hide(); console.log(error)});
+            .catch(error =>{ 
+                loader.hide();  
+                Swal.fire('Ops!',
+                    'Terjadi kesalahan, mungkin nomer surat tidak valid',
+                    'error'
+                    )
+                });
         
     }
  }
  function submitFileKontrak(){
+    if(!this.fileKontrak){
+        Swal.fire('Ops!',
+                    'File kontrak konversi belum dipilih',
+                    'error'
+                    )
+         return;
+    }
     let loader = this.$loading.show({
                 loader: 'dots'
             });
@@ -460,16 +524,22 @@
                     )
                 })
             .then(re=> loader.hide())
-            .catch(error =>loader.hide());
+            .catch(error =>{
+                loader.hide();
+                Swal.fire('Ops!',
+                    'Terjadi kesalahan, mungkin nomer surat tidak valid',
+                    'error'
+                    )
+            });
         
     }
  }
  function clearProfile(){
-     this.profile.name="";
-     this.profile.email="";
-     this.profile.nim="";
-     this.profile.kegiatan="";
-     this.profile.no_surat="";
+     app.profile.name="";
+     app.profile.email="";
+     app.profile.nim="";
+     app.profile.kegiatan="";
+     app.profile.no_surat="";
  }
  function profileIsEmpty(){
      return (this.profile.email==="" || this.profile.no_surat ==="")
