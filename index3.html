@@ -27,17 +27,17 @@
 </div>
 <main class="container" id="app">  
     <loading :active.sync="visible" :can-cancel="true"></loading>
-    <input v-model="access_id" placeholder="Surat Tugas">
-    <button v-on:click="onClickButtonCari">Cari</button>
-    <br>
-    <p style="white-space: pre-line;">{{ access_id_message }}</p>
-  <p>
-      <strong>IDENTITAS</strong><br>
-      nama : {{profile.name}}<br>
-      NIM : {{profile.nim}}<br>
-      Kegiatan : {{profile.kegiatan}}
-
-  </p>
+    <div class="panel-group">
+        <div class="panel panel-warning">
+          <div class="panel-heading">PENCARIAN</div>                 
+          <div class="panel-body">
+            <input v-model="access_id" placeholder="Surat Tugas">
+            <button v-on:click="onClickButtonCari">Cari</button>
+            <br>
+            <p style="white-space: pre-line;">{{ access_id_message }}</p>
+          </div>
+        </div>
+    </div>
   <div class="panel-group">
       <div class="panel panel-primary">
         <div class="panel-heading">STEP 1. PROFIL PESERTA</div>                 
@@ -109,13 +109,13 @@
                 <label>File Sertifikat
                     <input type="file" @change="handleFileUploadSertifikat( $event )"/>
                 </label>
-                <button @click="submitFileSertifikat">Submit</button>
+                <button class="btn btn-primary" @click="submitFileSertifikat" :disabled='profileIsEmpty()'>Submit</button>
             </div>  
             <div class="container">
                 <label>File Kontrak Konversi
                     <input type="file"  @change="handleFileUploadKontrak( $event )"/>
                 </label>
-                <button @click="submitFileKontrak" >Submit</button>
+                <button class="btn btn-primary" @click="submitFileKontrak" :disabled='profileIsEmpty()'>Submit</button>
             </div>
             </div>
         </div>
@@ -172,7 +172,7 @@
             </table>
     
             <div class="form-group">
-                <button class="btn btn-primary">Submit</button>
+                <button class="btn btn-primary" :disabled='profileIsEmpty()'>Submit</button>
             </div>
             </form>
         </div> 
@@ -196,15 +196,17 @@
     visible:false,
     access_id:"",
     access_id_message:"001/FIK-IF/AMIKOM/REK.STUIND/07/2021",
-    profile:{name:'waiting...',nim:'waiting..',kegiatan:'waiting..',email:'',no_surat:''},
+    profile:{name:'',nim:'',kegiatan:'',email:'',no_surat:''},
     items:[{id:'',objective:'',durasi:'',kode:'',matkul:'',sks:'',angka:'',huruf:'',email:'',no_surat:'',status:''}]     
    },
     components: {
         Loading: VueLoading
     },
    methods: {
+    profileIsEmpty,
     submitEntry,
-    addRow: function() {   
+    addRow: function() { 
+  
        var randomId = Math.floor(100000 + Math.random() * 900000);
        this.items.push({id:randomId, objective:'',durasi:'',
                         kode:'',matkul:'',sks:'',
@@ -300,6 +302,7 @@
                         //handle error
                         console.log(response);
                         loader.hide();
+                        clearProfile();
                     });
 
             }
@@ -456,6 +459,16 @@
             .catch(error =>loader.hide());
         
     }
+ }
+ function clearProfile(){
+     this.profile.name="";
+     this.profile.email="";
+     this.profile.nim="";
+     this.profile.kegiatan="";
+     this.profile.no_surat="";
+ }
+ function profileIsEmpty(){
+     return (this.profile.email==="" || this.profile.no_surat ==="")
  }
  </script>
  </body>
