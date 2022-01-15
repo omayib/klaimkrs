@@ -317,22 +317,27 @@
         let loader = this.$loading.show({
                 loader: 'dots'
             });
-            
         var urlProfile = baseUrl+"?action=1&sr="+app.access_id;
         var urlKonversi = baseUrl+"?action=2&sr="+app.access_id;
         let endpoints = [urlProfile,urlKonversi];
-        console.log(endpoints);
         axios.all(endpoints.map((endpoint)=>axios.get(endpoint))).then(
             axios.spread((profile,konversi)=>{
-                if(profile){
+                loader.hide();
+                if(profile.data.data.length>0){
                     var _profil=profile.data.data.shift();
                     app.profile.name=_profil.nama;
                     app.profile.nim=_profil.nim;
                     app.profile.kegiatan=_profil.jenis_rekomendasi;
                     app.profile.email=_profil.email;
                     app.profile.no_surat=_profil.no_surat;
+                }else{
+                    Swal.fire(
+                    'Ops!',
+                    'Profile tidak ditemukan. Lengkapi STEP 1',
+                    'error'
+                    )
                 }
-                if(konversi){
+                if(konversi.data.data.length>0){
                     var _items=konversi.data.data;
                     app.items=[];
                     _items.forEach(function(e,i){
@@ -342,7 +347,6 @@
                                     no_surat:e.no_surat});
                     });
                 }
-                loader.hide();
             })
         ).catch(function (error) {
                 // handle error
