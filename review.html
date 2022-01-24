@@ -190,11 +190,11 @@
             <div class="panel-heading">Review</div>                 
             <div class="panel-body">  
                 <div class="container">       
-                    <textarea v-model="feedback" placeholder="tulis komentar disini"></textarea>
+                    <textarea  style="width: 75%" v-model="feedback" placeholder="tulis komentar disini"></textarea>
                 </div>
                 <div class="container">
-                    <button class="btn btn-warning" @click="submitFeedback('rejected')" >Tolak</button>
-                    <button class="btn btn-warning" @click="submitFeedback('approved')" >Setuju</button>
+                    <button class="btn btn-danger" @click="submitFeedback('rejected')" >Tolak</button>
+                    <button class="btn btn-success" @click="submitFeedback('approved')" >Setuju</button>
                 </div>  
                 <div class="container">
                 </div>
