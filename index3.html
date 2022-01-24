@@ -122,12 +122,14 @@
                     <input type="file" @change="handleFileUploadSertifikat( $event )"/>
                 </label>
                 <button class="btn btn-primary" @click="submitFileSertifikat" :disabled='profileIsEmpty()'>SIMPAN</button>
+                <button class="btn btn-primary" v-if="(fileUrlSertifikat)" @click="openSertifikat" ><i class="fa fa-download"></i> LIHAT</button>
             </div>  
             <div class="container">
                 <label>File Kontrak Konversi
                     <input type="file"  @change="handleFileUploadKontrak( $event )"/>
                 </label>
                 <button class="btn btn-primary" @click="submitFileKontrak" :disabled='profileIsEmpty()'>SIMPAN</button>
+                <button class="btn btn-primary" v-if="(fileUrlKontrakKonversi)" @click="openKontrakKonversi" ><i class="fa fa-download"></i> LIHAT</button>
             </div>
             </div>
         </div>
@@ -252,6 +254,12 @@
         Loading: VueLoading
     },
    methods: {
+    openSertifikat:function(){
+        window.open(app.fileUrlSertifikat, "_blank");
+    },
+    openKontrakKonversi:function(){
+        window.open(app.fileUrlKontrakKonversi, "_blank");
+    },
     onClickButtonSubmit,
     profileIsEmpty,
     submitEntry,
@@ -407,6 +415,8 @@
                     app.profile.no_surat=_profil.no_surat;
                     app.dosenTerpilih.name=_profil.dosen_nama;
                     app.dosenTerpilih.email=_profil.dosen_email;
+                    app.fileUrlKontrakKonversi = _profil.bukti_kontrak_konversi;
+                    app.fileUrlSertifikat = _profil.bukti_sertifikat;
 
                     app.profileDraft.name=_profil.nama;
                     app.profileDraft.nim=_profil.nim;
