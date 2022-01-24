@@ -1,0 +1,675 @@
+<html lang="en">
+    <!-- https://5balloons.info/post-form-data-to-api-using-axios-in-vuejs/ 
+    https://5balloons.info/post-form-data-to-api-using-axios-in-vuejs/
+    https://codepen.io/edvaldolima/pen/evzWor
+    https://gist.github.com/richardblondet/ce87a397ef669d4d25dd21ea02b9dda1
+    https://jsfiddle.net/ankurk91/w8y8k5wo/
+    https://serversideup.net/uploading-files-vuejs-axios/
+    -->
+<head>
+  <title>Form konversi prodi Informatika 2022</title>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+   <link href="https://cdn.jsdelivr.net/npm/vue-loading-overlay@3/dist/vue-loading.css" rel="stylesheet">
+   <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>  
+   <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+   <script src="https://cdn.jsdelivr.net/npm/vue-loading-overlay@3"></script>
+   <!-- or point to a specific vue-select release -->
+<script src="https://unpkg.com/vue-select@3.0.0"></script>
+<link rel="stylesheet" href="https://unpkg.com/vue-select@3.0.0/dist/vue-select.css">
+   <meta name="referrer" content="same-origin">
+</head>
+<body>
+<div class="container">
+        <p style="text-align: center;"><img src="https://drive.google.com/u/0/uc?id=19wQb9EOG5DIQJ3jTppyQf6NWoVTw-kVj&amp;export=download" alt="" width="750" /></p>
+        <h1 style="text-align: center;">PENGAJUAN KLAIM KONVERSI SKS - MBKM</h1>
+</div>
+<main class="container" id="app">  
+    <loading :active.sync="visible" :can-cancel="true"></loading>
+    <div class="panel-group">
+        <div class="panel panel-warning">
+          <div class="panel-heading">PENCARIAN</div>                 
+          <div class="panel-body">
+            <input v-model="access_id" placeholder="Surat Tugas">
+            <button v-on:click="onClickButtonCari">Cari</button>
+            <br>
+            <p style="white-space: pre-line;">{{ access_id_message }}</p>
+          </div>
+        </div>
+    </div>
+  <div class="panel-group">
+      <div class="panel panel-primary">
+        <div class="panel-heading">STEP 1. PROFIL PESERTA</div>                 
+        <div class="panel-body">  
+
+            <form v-on:submit.prevent="submitEntry">
+                <table>
+                    <tbody>
+                        <tr>
+                            <td>
+                                Nama 
+                            </td>
+                            <td>
+                                <input v-model="profileDraft.name" placeholder="Nama lengkap" :disabled=true>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                NIM
+                            </td>
+                            <td>
+                                <input v-model="profileDraft.nim" placeholder="19.11.1155x" :disabled=true>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                No. Surat Tugas
+                            </td>
+                            <td>
+                                <input v-model="profileDraft.no_surat" placeholder="contoh : 01/FIK/BANGKIT/2022" :disabled=true>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                Email
+                            </td>
+                            <td>
+                                <input v-model="profileDraft.email" placeholder="stefani@students.amikom.ac.id" :disabled=true>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                Kegiatan
+                            </td>
+                            <td>
+                                <v-select  :disabled=true
+                                :options="opsiKegiatan" 
+                                label="title"
+                                v-model="profileDraft.kegiatan"
+                              ></v-select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                Dosen Pendamping
+                            </td>
+                            <td>
+                                <v-select  :disabled=true
+                                :options="dosen"
+                                label="name"
+                                v-model="dosenTerpilih"
+                              ></v-select>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </form>
+        </div>
+
+      </div>
+
+  </div>
+  <div class="panel-group">
+    <div class="panel panel-primary">
+        <div class="panel-heading">STEP 2. BUKTI KEGIATAN</div>                 
+        <div class="panel-body">  
+            <div class="container">
+                <label>File Sertifikat
+                </label>
+                <button class="btn btn-primary" @click="openSertifikat" >Lihat</button>
+            </div>  
+            <div class="container">
+                <label>File Kontrak Konversi
+                </label>
+                <button class="btn btn-primary" @click="openKontrakKonversi">Lihat</button>
+            </div>
+            </div>
+        </div>
+    </div>
+  </div>  
+  <div class="panel-group">
+    <div class="panel panel-primary">
+     <div class="panel-heading">STEP 3. USULAN KONVERSI</div>                  
+        <div class="panel-body" :disabled=true> 
+            <i class="fa fa-plus pull-right"  @click="addRow" style="font-size:25px;color:#337ab7;cursor:pointer"></i>
+            
+            <form v-on:submit.prevent="submitForm">
+            <table class="table table-bordered">
+            <thead class="text text-success">
+                <tr>                            
+                    <th>Objective</th>
+                    <th>Durasi</th>
+                    <th>Kode Matkul</th>
+                    <th>Nama Matkul</th>
+                    <th>SKS Matkul</th>
+                    <th>Nilai Angka</th>
+                    <th>Nilai Huruf</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr v-for='(user, index) in items'>                            
+                    <td>
+                    <input  v-model="user.objective"  class="form-control" type="text" :disabled=true />
+                    </td>
+                    <td>
+                    <input v-model="user.durasi" class="form-control" type="text"  :disabled=true />
+                    </td>
+                    <td>
+                    <input v-model="user.kode" class="form-control" type="text"  :disabled=true />
+                    </td>
+                    <td>
+                    <input v-model="user.matkul" class="form-control" type="text"  :disabled=true />
+                    </td>
+                    <td>
+                    <input v-model="user.sks" class="form-control" type="text"  :disabled=true />
+                    </td>
+                    <td>
+                    <input v-model="user.angka" class="form-control" type="text"  :disabled=true />
+                    </td>
+                    <td>
+                    <input v-model="user.huruf" class="form-control" type="text"  :disabled=true />
+                    </td>
+                    <td>
+                    <i  @click="deleteRow(index)" class="fa fa-remove" style="font-size:25px;color:red;cursor:pointer"  :disabled=true></i>
+                    </td>
+                </tr>                        
+            </tbody>
+            </table>
+    
+            <div class="form-group">
+                <button class="btn btn-primary"   :disabled=true>Submit</button>
+            </div>
+            </form>
+        </div> 
+      </div>
+    </div>
+    <div class="panel-group">
+        <div class="panel panel-primary">
+            <div class="panel-heading">Review</div>                 
+            <div class="panel-body">  
+                <div class="container">       
+                    <textarea v-model="feedback" placeholder="tulis komentar disini"></textarea>
+                </div>
+                <div class="container">
+                    <button class="btn btn-warning" @click="submitFeedback('rejected')" >Tolak</button>
+                    <button class="btn btn-warning" @click="submitFeedback('approved')" >Setuju</button>
+                </div>  
+                <div class="container">
+                </div>
+                </div>
+            </div>
+        </div>
+      </div> 
+</main>
+<script >
+ var no_surat="001/FIK-IF/AMIKOM/REK.STUIND/07/2021";
+ Vue.use(VueLoading);
+ Vue.component('v-select', VueSelect.VueSelect);
+ const Toast = Swal.mixin({
+    toast: true,
+    position: 'top-end',
+    showConfirmButton: false,
+    timer: 3000,
+    timerProgressBar: true
+    })
+ var key="AKfycbxlIAPOYXsKC9V6Xobt-Mes59yXKBfSDnD6C-V7pUcZCVf4YBGZ75rxmnloDLYi_fK2";//"AKfycbyC8gSkitA2FN3n3DZziIMJla_4xSDRel5SEDiDNMmNXaI00Oa98Th-mWDC3N12YefX";
+ var baseUrl=`https://script.google.com/macros/s/${key}/exec`;
+ var app = new Vue({
+     
+   el: '#app',
+   data: {
+    opsiKegiatan:["Studi Independen","Magang Bersertifikat","Bangkit","Pertukaran Pelajar"],
+    fileUrlSertifikat:"",
+    fileUrlKontrakKonversi:"",   
+    fileSertifikat:"",  
+    fileKontrak:"",
+    visible:false,
+    feedback:"",
+    access_id:"",
+    access_id_message:"001/FIK-IF/AMIKOM/REK.STUIND/07/2021",
+    dosen:[{name:'',email:''}],
+    dosenTerpilih:{name:'',email:''},
+    profileDraft:{name:'',nim:'',kegiatan:'',email:'',no_surat:''},
+    profile:{name:'',nim:'',kegiatan:'',email:'',no_surat:''},
+    items:[{id:'',objective:'',durasi:'',kode:'',matkul:'',sks:'',angka:'',huruf:'',email:'',no_surat:'',status:''}]     
+   },
+   mounted(){
+        this.onClickButtonCari();
+   },
+    components: {
+        Loading: VueLoading
+    },
+   methods: {
+    openSertifikat:function(){
+        window.open(app.fileUrlSertifikat, "_blank");
+    },
+    openKontrakKonversi:function(){
+        window.open(app.fileUrlKontrakKonversi, "_blank");
+    },
+    profileIsEmpty,
+    submitEntry,
+    addRow: function() { 
+  
+       var randomId = Math.floor(100000 + Math.random() * 900000);
+       this.items.push({id:randomId, objective:'',durasi:'',
+                        kode:'',matkul:'',sks:'',
+                        angka:'',huruf:'',email:app.profile.email,
+                        no_surat:app.profile.no_surat,status:''});
+        console.log("add "+this.items);
+    },
+    deleteRow(index){
+        Swal.fire({
+            title: 'Yakin dihapus?',
+            text: "Proses tidak bisa diualng",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Ya, hapus!'
+            }).then((result) => {
+            if (result.isConfirmed) {
+                var item = this.items[index];
+                item.status='delete'
+                Vue.set(this.items,index,item)  
+
+                Swal.fire(
+                'Deleted!',
+                'SKS Konversi berhasil dihapus.',
+                'success'
+                )
+            }
+            })   
+        // var item = this.items[index];
+        // item.status='delete'
+        // Vue.set(this.items,index,item)        
+    },
+    submitFeedback,
+    submitForm,
+    onClickButtonCari,
+    submitFileKontrak,
+    submitFileSertifikat,
+    fetchDosen,
+    handleFileUploadSertifikat(event){
+        this.fileSertifikat = event.target.files[0];
+      },
+    handleFileUploadKontrak(event){
+        this.fileKontrak = event.target.files[0];
+      }
+   }  
+  })
+  function submitEntry(){
+    var urlProfile = `${baseUrl}?action=8`;
+      var dataTobeUpload ={
+          nama:this.profileDraft.name,
+          email:this.profileDraft.email,
+          nim:this.profileDraft.nim,
+          kegiatan:this.profileDraft.kegiatan,
+          no_surat:this.profileDraft.no_surat,
+          dosen_nama : this.dosenTerpilih.name,
+          dosen_email : this.dosenTerpilih.email
+      }
+    if(this.profileDraft.name ==="" || 
+        this.profileDraft.email ==="" || 
+        this.profileDraft.nim ===""|| 
+        this.profileDraft.kegiatan ===""|| 
+        this.profileDraft.no_surat ===""||
+        this.dosenTerpilih.email ==="" ){
+            Swal.fire(
+                    'Ops!',
+                    'data masih kosong',
+                    'error'
+                    )
+    }else{
+        Swal.fire({
+            title: 'Data akan disimpan?',
+            text: "Periksa dengan teliti",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Ya, Submit'
+            })
+            .then((result) => {
+            if (result.isConfirmed) {
+                let loader = this.$loading.show({
+                    loader: 'dots'
+                });
+                axios({
+                    method: "post",
+                    url: urlProfile,
+                    data: dataTobeUpload,
+                    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                                "Access-Control-Allow-Origin": "*"
+                    })
+                    .then(function (response) {
+                        //handle success
+                        loader.hide();
+                        var _profil=response.data.data;
+                        console.log(_profil);
+                        if(_profil){
+                            Toast.fire({
+                                icon: 'success',
+                                title: 'Profil berhasil diperbarui'
+                                })
+                            
+                            app.profile.name=_profil.nama;
+                            app.profile.nim=_profil.nim;
+                            app.profile.kegiatan=_profil.kegiatan;
+                            app.profile.email=_profil.email;
+                            app.profile.no_surat=_profil.no_surat;
+
+                            app.profileDraft.name=_profil.nama;
+                            app.profileDraft.nim=_profil.nim;
+                            app.profileDraft.kegiatan=_profil.kegiatan;
+                            app.profileDraft.email=_profil.email;
+                            app.profileDraft.no_surat=_profil.no_surat;
+                        }else{
+                            clearProfile();
+                        }
+                    })
+                    .catch(function (response) {
+                        //handle error
+                        console.log(response);
+                        loader.hide();
+                    });
+
+            }
+
+        }) 
+    }
+    
+                
+
+  }
+  function onClickButtonCari(){
+        this.access_id=no_surat;
+        let loader = this.$loading.show({
+                loader: 'dots'
+            });
+        var urlProfile = baseUrl+"?action=1&sr="+no_surat;
+        var urlKonversi = baseUrl+"?action=2&sr="+no_surat;
+        let endpoints = [urlProfile,urlKonversi];
+        axios.all(endpoints.map((endpoint)=>axios.get(endpoint))).then(
+            axios.spread((profile,konversi)=>{
+                loader.hide();
+                if(profile.data.data.length>0){
+                    var _profil=profile.data.data.shift();
+                    console.log(_profil);
+                    app.profile.name=_profil.nama;
+                    app.profile.nim=_profil.nim;
+                    app.profile.kegiatan=_profil.jenis_rekomendasi;
+                    app.profile.email=_profil.email;
+                    app.profile.no_surat=_profil.no_surat;
+                    app.dosenTerpilih.name=_profil.dosen_nama;
+                    app.dosenTerpilih.email=_profil.dosen_email;
+                    app.fileUrlKontrakKonversi = _profil.bukti_kontrak_konversi;
+                    app.fileUrlSertifikat = _profil.bukti_sertifikat;
+
+                    app.profileDraft.name=_profil.nama;
+                    app.profileDraft.nim=_profil.nim;
+                    app.profileDraft.kegiatan=_profil.jenis_rekomendasi;
+                    app.profileDraft.email=_profil.email;
+                    app.profileDraft.no_surat=_profil.no_surat;
+                }else{
+                    clearProfile();
+                    Swal.fire(
+                    'Ops!',
+                    'Profile tidak ditemukan. Lengkapi STEP 1',
+                    'error'
+                    )
+                }
+                if(konversi.data.data.length>0){
+                    var _items=konversi.data.data;
+                    app.items=[];
+                    _items.forEach(function(e,i){
+                        app.items.push({id:e.id,objective:e.objective,durasi:e.durasi,
+                                    kode:e.kode_makul, sks:e.sks, matkul:e.makul,
+                                    angka:e.angka,huruf:e.huruf,email:e.email,
+                                    no_surat:e.no_surat});
+                    });
+                }
+            })
+        ).catch(function (error) {
+                // handle error
+                console.log(error);
+                loader.hide()
+            })
+        .then(function () {
+        });
+ }   
+ function submitForm(){
+        // var baseUrl = `https://script.google.com/macros/s/${app.key}/exec`
+
+        // var urlKonversi = app.baseUrl+"?action=insert";
+        var urlKonversi = baseUrl+"?action=6";
+        var payload = {items:app.items,profile:app.profile};
+        console.log("payload");
+       
+        
+        Swal.fire({
+            title: 'Data akan disimpan?',
+            text: "Periksa dengan teliti",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Ya, Submit'
+            })
+            .then((result) => {
+            if (result.isConfirmed) {
+                let loader = this.$loading.show({
+                    loader: 'dots'
+                });
+                axios({
+                    method: "post",
+                    url: urlKonversi,
+                    data: app.items,
+                    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                                "Access-Control-Allow-Origin": "*"
+                    })
+                    .then(function (response) {
+                        //handle success
+                        console.log(response);
+                        loader.hide();
+                        Toast.fire({
+                            icon: 'success',
+                            title: 'Konversi berhasil diperbarui'
+                            })
+                    })
+                    .catch(function (response) {
+                        //handle error
+                        console.log(response);
+                        Swal.fire('Ops!',
+                            'Terjadi kesalahan, mungkin nomer surat tidak valid',
+                            'error'
+                            )
+                        loader.hide();
+                    });
+
+            }
+
+            }) 
+
+        
+ }
+ function submitFileSertifikat(){
+    if(!this.fileSertifikat){
+        Swal.fire('Ops!',
+                    'File sertifikat belum dipilih',
+                    'error'
+                    )
+         return;
+    }
+    let loader = this.$loading.show({
+                loader: 'dots'
+            });
+    const qs = new URLSearchParams({filename:this.fileSertifikat.name, 
+                                    mimeType: this.fileSertifikat.type, 
+                                    action:7,
+                                    noSurat:this.profile.no_surat,
+                                    jenis:'sertifikat'});
+    const fr = new FileReader();
+    fr.readAsArrayBuffer(this.fileSertifikat);
+    fr.onload = f => {
+        axios({
+                method: "post",
+                url: `${baseUrl}?${qs}`,
+                data: JSON.stringify([...new Int8Array(f.target.result)])                               
+            }).then(function(r){
+                app.fileUrlSertifikat = r.data.fileUrl;
+                console.log(JSON.stringify(r.data));
+                loader.hide();
+                Swal.fire(
+                    'Good job!',
+                    'Kamu berhasil mengunngah sertifikat',
+                    'success'
+                    )
+                })
+            .then(re=>{ loader.hide(); console.log(re)})
+            .catch(error =>{ 
+                loader.hide();  
+                Swal.fire('Ops!',
+                    'Terjadi kesalahan, mungkin nomer surat tidak valid',
+                    'error'
+                    )
+                });
+        
+    }
+ }
+ function submitFileKontrak(){
+    if(!this.fileKontrak){
+        Swal.fire('Ops!',
+                    'File kontrak konversi belum dipilih',
+                    'error'
+                    )
+         return;
+    }
+    let loader = this.$loading.show({
+                loader: 'dots'
+            });
+    const qs = new URLSearchParams({filename:this.fileKontrak.name, 
+                                    mimeType: this.fileKontrak.type, 
+                                    action:7,
+                                    noSurat:this.profile.no_surat,
+                                    jenis:'kontrakkonversi'});
+    const fr = new FileReader();
+    fr.readAsArrayBuffer(this.fileKontrak);
+    fr.onload = f => {
+        axios({
+                method: "post",
+                url: `${baseUrl}?${qs}`,
+                data: JSON.stringify([...new Int8Array(f.target.result)])
+            }).then(function(r){
+                app.fileUrlKontrakKonversi = r.data.fileUrl;
+                loader.hide();
+                Swal.fire(
+                    'Good job!',
+                    'Kamu berhasil mengunngah kontrak konversi',
+                    'success'
+                    )
+                })
+            .then(re=> loader.hide())
+            .catch(error =>{
+                loader.hide();
+                Swal.fire('Ops!',
+                    'Terjadi kesalahan, mungkin nomer surat tidak valid',
+                    'error'
+                    )
+            });
+        
+    }
+ }
+ function clearProfile(){
+     app.profile.name="";
+     app.profile.email="";
+     app.profile.nim="";
+     app.profile.kegiatan="";
+     app.profile.no_surat="";
+ }
+ function profileIsEmpty(){
+     return (this.profile.email==="" || this.profile.no_surat ==="")
+ }
+ function fetchDosen(){
+     console.log("mounted")
+     
+    const qs = new URLSearchParams({action:5});
+    const url = `${baseUrl}?${qs}`;
+    // axios.get(url)
+    //     .then(result=>{
+    //         console.log(result);
+    //     })
+    //     .catch(error =>{
+    //         console.log(error);})
+    const initialdata={"status":true,"data":[{"nidn":521049501,"nik":190302022,"nama_dosen":"Ade Pujianto, M.Kom","email_dosen":"ade.pujianto@amikom.ac.id","row":2},{"nidn":510089101,"nik":190302122,"nama_dosen":"Agit Amrullah,  S.Kom, M.Kom","email_dosen":"agit@amikom.ac.id","row":3},{"nidn":512126503,"nik":190302122,"nama_dosen":"Agung Pambudi, M.A","email_dosen":"agung.p@amikom.ac.id","row":4},{"nidn":513039002,"nik":190302148,"nama_dosen":"Ahmad Sa`di, S.Kom, M.Eng","email_dosen":"ahmadsa@amikom.ac.id","row":5},{"nidn":511119001,"nik":190302255,"nama_dosen":"Ainul Yaqin, S.Kom., M.Kom","email_dosen":"ainulyaqin@amikom.ac.id","row":6},{"nidn":518078401,"nik":190302192,"nama_dosen":"Alva Hendi Muhammad, S.T., M.Eng, Ph.D","email_dosen":"alva@amikom.ac.id","row":7},{"nidn":522088001,"nik":190302047,"nama_dosen":"Andika Agus Slameto, M.Kom","email_dosen":"rmkt.andika@amikom.ac.id","row":8},{"nidn":517098801,"nik":190302047,"nama_dosen":"Anna Baita, S.Kom, M.Kom","email_dosen":"anna@amikom.ac.id","row":9},{"nidn":506058901,"nik":190302036,"nama_dosen":"Arif Akbarul Huda, S.Si., M.Eng","email_dosen":"arif.akbarul@amikom.ac.id","row":10},{"nidn":529098202,"nik":190302150,"nama_dosen":"Arif Dwi Laksito, M.Kom","email_dosen":"arif.laksito@amikom.ac.id","row":11},{"nidn":513018701,"nik":190302211,"nama_dosen":"Arifiyanto Hadi Negoro, S.Kom., M.Eng","email_dosen":"arifiyanto@amikom.ac.id","row":12},{"nidn":407106704,"nik":190302152,"nama_dosen":"Asro Nasiri, Drs, M.Kom","email_dosen":"asro@amikom.ac.id","row":13},{"nidn":520068503,"nik":190302152,"nama_dosen":"Ayuni Fitria, S.Pd,M.A.","email_dosen":"ayuni.fitria@amikom.ac.id","row":14},{"nidn":505028902,"nik":190302126,"nama_dosen":"Bayu Nadya Kusuma, S.T,M.Eng","email_dosen":"bayu.nadya@amikom.ac.id","row":15},{"nidn":526048401,"nik":190302216,"nama_dosen":"Bayu Setiaji, M.Kom","email_dosen":"bayusetiaji@amikom.ac.id","row":16},{"nidn":527028001,"nik":190302197,"nama_dosen":"Dhani Ariatmanto, M.Kom","email_dosen":"dhaniari@amikom.ac.id","row":17},{"nidn":519088901,"nik":190302128,"nama_dosen":"Dwi Nurani, M.Kom","email_dosen":"dwinurani@amikom.ac.id","row":18},{"nidn":525026902,"nik":190302101,"nama_dosen":"Edy Musoffa, S.Ag, M.H.","email_dosen":"edy.m@amikom.ac.id","row":19},{"nidn":524078901,"nik":190302227,"nama_dosen":"Eli Pujastuti, M.Kom","email_dosen":"eli@amikom.ac.id","row":20},{"nidn":206087501,"nik":190302125,"nama_dosen":"Emigawaty, S.Kom,M.Kom","email_dosen":"emigawaty@amikom.ac.id","row":21},{"nidn":511029001,"nik":190302111,"nama_dosen":"Ferian Fauzi Abdulloh, M.Kom","email_dosen":"ferian.fauzi@amikom.ac.id","row":22},{"nidn":521058101,"nik":190302235,"nama_dosen":"Ferry Wahyu Wibowo, M.Cs","email_dosen":"ferry.w@amikom.ac.id","row":23},{"nidn":519127303,"nik":190302024,"nama_dosen":"Hanafi, S.Kom., M.Eng","email_dosen":"hanafi@amikom.ac.id","row":24},{"nidn":518068702,"nik":190302230,"nama_dosen":"Herda Dicky Ramandita, M.Kom","email_dosen":"herda.dr@amikom.ac.id","row":25},{"nidn":512118802,"nik":190302237,"nama_dosen":"Ike Verawati, S.Kom., M.Kom","email_dosen":"ikeverawati@amikom.ac.id","row":26},{"nidn":529069201,"nik":190302237,"nama_dosen":"Irwan Oyong, M.Kom","email_dosen":"oyong@amikom.ac.id","row":27},{"nidn":523128403,"nik":190302181,"nama_dosen":"Juarisman, M.Kom","email_dosen":"aris23@amikom.ac.id","row":28},{"nidn":506036001,"nik":190302065,"nama_dosen":"Kalis Purwanto, Drs., MM., Dr","email_dosen":"kalis@amikom.ac.id","row":29},{"nidn":525038203,"nik":190302159,"nama_dosen":"Kamarudin, M.Kom","email_dosen":"kamarudin@amikom.ac.id","row":30},{"nidn":515067101,"nik":190302038,"nama_dosen":"Kumara Ari Yuana, ST, MT","email_dosen":"kumara.a@amikom.ac.id","row":31},{"nidn":528097501,"nik":190302112,"nama_dosen":"Kusnawi, S.Kom, M.Eng","email_dosen":"khusnawi@amikom.ac.id","row":32},{"nidn":505128101,"nik":190302151,"nama_dosen":"Lukman, M.Kom","email_dosen":"masman@amikom.ac.id","row":33},{"nidn":524119202,"nik":190302098,"nama_dosen":"Majid Rahardi, S.Kom, M.Eng","email_dosen":"majid@amikom.ac.id","row":34},{"nidn":527077801,"nik":190302098,"nama_dosen":"Mardhiya Hayaty, ST, M.Kom","email_dosen":"mardhiya_hayati@amikom.ac.id","row":35},{"nidn":528056203,"nik":190302098,"nama_dosen":"Muh. Ayub Pramana, S.H, M.H","email_dosen":"pramanaayub@gmail.com","row":36},{"nidn":504098603,"nik":190302098,"nama_dosen":"Muhammad Fairul Filza, S.Kom, M.Kom","email_dosen":"fairul.f@amikom.ac.id","row":37},{"nidn":518037801,"nik":190302098,"nama_dosen":"Muhammad Rudyanto Arief, ST,MT","email_dosen":"rudy@amikom.ac.id","row":38},{"nidn":526078901,"nik":190302098,"nama_dosen":"Muhammad Tofa Nurcholis, M.Kom","email_dosen":"tofa@amikom.ac.id","row":39},{"nidn":515109301,"nik":190302098,"nama_dosen":"Mujiyanto, M.Kom","email_dosen":"mujiyanto@amikom.ac.id","row":40},{"nidn":525118601,"nik":190302248,"nama_dosen":"Mulia Sulistiyono, M.Kom","email_dosen":"muliasulistiyono@amikom.ac.id","row":41},{"nidn":506129001,"nik":190302062,"nama_dosen":"Nafiatun Sholihah, S.Kom, M.Sc","email_dosen":"nafiatun@amikom.ac.id","row":42},{"nidn":509076301,"nik":190302062,"nama_dosen":"Narwanto Nurcahyo, S.H, M.M","email_dosen":"narwanto.n@amikom.ac.id","row":43},{"nidn":516119201,"nik":190302245,"nama_dosen":"Novi Prisma Yunita, M.Kom","email_dosen":"novi@amikom.ac.id","row":44},{"nidn":520067901,"nik":190302245,"nama_dosen":"Nur aini, M.Kom","email_dosen":"nuraini@amikom.ac.id","row":45},{"nidn":513039101,"nik":190302066,"nama_dosen":"Nuri Cahyono, M.Kom","email_dosen":"nuricahyono@amikom.ac.id","row":46},{"nidn":527078603,"nik":190302208,"nama_dosen":"Raditya Wardhana, M.Kom","email_dosen":"raditic@amikom.ac.id","row":47},{"nidn":518089301,"nik":190302046,"nama_dosen":"Rakhma Shafrida Kurnia, S.Kom, M.Kom","email_dosen":"rakhmakurnia@amikom.ac.id","row":48},{"nidn":518129301,"nik":190302222,"nama_dosen":"Rifda Faticha Alfa Aziza, S.Kom, M.Kom","email_dosen":"rifdafaticha@amikom.ac.id","row":49},{"nidn":511068701,"nik":190302215,"nama_dosen":"Rizqi Sukma Kharisma, M.Kom","email_dosen":"sukma@amikom.ac.id","row":50},{"nidn":521058702,"nik":190302252,"nama_dosen":"Rumini, M.Kom","email_dosen":"rumini@amikom.ac.id","row":51},{"nidn":530058902,"nik":190302025,"nama_dosen":"Subektiningsih, S.Kom, M.Kom","email_dosen":"subektiningsih@amikom.ac.id","row":52},{"nidn":512047201,"nik":190302035,"nama_dosen":"Sudarmawan, ST, MT","email_dosen":"sudarmawan@amikom.ac.id","row":53},{"nidn":520058701,"nik":190302256,"nama_dosen":"Sumarni Adi, S.Kom., M.Cs","email_dosen":"sumarni.a@amikom.ac.id","row":54},{"nidn":507048001,"nik":190302110,"nama_dosen":"Tristanto Ariaji, M.Kom","email_dosen":"tristanto.a@amikom.ac.id","row":55},{"nidn":521048702,"nik":190302048,"nama_dosen":"Uyock Anggoro Saputro, S.Kom, M.Kom","email_dosen":"uyock@amikom.ac.id","row":56},{"nidn":517038501,"nik":190302545,"nama_dosen":"Windha Mega Pradya D, M.Kom","email_dosen":"windha@amikom.ac.id","row":57},{"nidn":517036801,"nik":190302545,"nama_dosen":"Yogi Piskonata, S.S., M.Kom","email_dosen":"yogi.piskonata@amikom.ac.id","row":58},{"nidn":505077501,"nik":190302545,"nama_dosen":"Yudi Sutanto, M.Kom","email_dosen":"yudisuta@amikom.ac.id","row":59}]};
+    var daftarDosen = initialdata.data;
+    app.dosen = [];
+    daftarDosen.forEach((e,i)=>{
+        app.dosen.push({name:e.nama_dosen,email:e.email_dosen});
+    })
+ }
+ function submitFeedback(e){
+
+    var urlReview = `${baseUrl}?action=9`;
+     console.log(e);
+     var dataTobeUpload = {
+         review_feedback:app.feedback,
+         review_status:e,
+         no_surat:no_surat
+     }
+     console.log("dataTobeUpload "+JSON.stringify(dataTobeUpload));
+     Swal.fire({
+            title: 'Review akan disimpan?',
+            text: "Periksa dengan teliti",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Ya, Submit'
+            })
+            .then((result) => {
+            if (result.isConfirmed) {
+                let loader = this.$loading.show({
+                    loader: 'dots'
+                });
+                axios({
+                    method: "post",
+                    url: urlReview,
+                    data: dataTobeUpload,
+                    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                                "Access-Control-Allow-Origin": "*"
+                    })
+                    .then(function (response) {
+                        //handle success
+                        loader.hide();
+                        console.log(response);
+                        if(response.data.status){
+                            Toast.fire({
+                                    icon: 'success',
+                                    title: 'Review berhasil diperbarui'
+                                    })
+                        }else{
+                            Toast.fire({
+                                    icon: 'error',
+                                    title: 'Review gagal diperbarui'
+                                    })
+                        }
+                    })
+                    .catch(function (response) {
+                        //handle error
+                        console.log(response);
+                        loader.hide();
+                            Toast.fire({
+                                    icon: 'error',
+                                    title: 'Review gagal diperbarui'
+                                    })
+                    });
+
+            }
+        })
+
+ }
+ </script>
+ </body>
+ </html> 
