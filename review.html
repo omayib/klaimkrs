@@ -112,19 +112,17 @@
   </div>
   <div class="panel-group">
     <div class="panel panel-primary">
-        <div class="panel-heading">STEP 2. UNGGAH BUKTI KEGIATAN</div>                 
+        <div class="panel-heading">STEP 2. BUKTI KEGIATAN</div>                 
         <div class="panel-body">  
             <div class="container">
                 <label>File Sertifikat
-                    <input type="file" @change="handleFileUploadSertifikat( $event )"/>
                 </label>
-                <button class="btn btn-primary" @click="submitFileSertifikat" :disabled=true >Submit</button>
+                <button class="btn btn-primary" @click="openSertifikat" >Lihat</button>
             </div>  
             <div class="container">
                 <label>File Kontrak Konversi
-                    <input type="file"  @change="handleFileUploadKontrak( $event )"/>
                 </label>
-                <button class="btn btn-primary" @click="submitFileKontrak" :disabled=true>Submit</button>
+                <button class="btn btn-primary" @click="openKontrakKonversi">Lihat</button>
             </div>
             </div>
         </div>
@@ -132,7 +130,7 @@
   </div>  
   <div class="panel-group">
     <div class="panel panel-primary">
-     <div class="panel-heading">STEP 3. FORM KONVERSI</div>                  
+     <div class="panel-heading">STEP 3. USULAN KONVERSI</div>                  
         <div class="panel-body" :disabled=true> 
             <i class="fa fa-plus pull-right"  @click="addRow" style="font-size:25px;color:#337ab7;cursor:pointer"></i>
             
@@ -187,6 +185,23 @@
         </div> 
       </div>
     </div>
+    <div class="panel-group">
+        <div class="panel panel-primary">
+            <div class="panel-heading">Review</div>                 
+            <div class="panel-body">  
+                <div class="container">       
+                    <textarea v-model="feedback" placeholder="tulis komentar disini"></textarea>
+                </div>
+                <div class="container">
+                    <button class="btn btn-warning" @click="submitFeedback('rejected')" >Tolak</button>
+                    <button class="btn btn-warning" @click="submitFeedback('approved')" >Setuju</button>
+                </div>  
+                <div class="container">
+                </div>
+                </div>
+            </div>
+        </div>
+      </div> 
 </main>
 <script >
  var no_surat="001/FIK-IF/AMIKOM/REK.STUIND/07/2021";
@@ -199,7 +214,7 @@
     timer: 3000,
     timerProgressBar: true
     })
- var key="AKfycbx2dlmmFtWzHYCYi4U3JMLW01DY5rvZMiXAQLRSJsbSRllNU9kyBJX49hQOs4bmWGA";//"AKfycbyC8gSkitA2FN3n3DZziIMJla_4xSDRel5SEDiDNMmNXaI00Oa98Th-mWDC3N12YefX";
+ var key="AKfycbxlIAPOYXsKC9V6Xobt-Mes59yXKBfSDnD6C-V7pUcZCVf4YBGZ75rxmnloDLYi_fK2";//"AKfycbyC8gSkitA2FN3n3DZziIMJla_4xSDRel5SEDiDNMmNXaI00Oa98Th-mWDC3N12YefX";
  var baseUrl=`https://script.google.com/macros/s/${key}/exec`;
  var app = new Vue({
      
@@ -211,6 +226,7 @@
     fileSertifikat:"",  
     fileKontrak:"",
     visible:false,
+    feedback:"",
     access_id:"",
     access_id_message:"001/FIK-IF/AMIKOM/REK.STUIND/07/2021",
     dosen:[{name:'',email:''}],
@@ -226,6 +242,12 @@
         Loading: VueLoading
     },
    methods: {
+    openSertifikat:function(){
+        window.open(app.fileUrlSertifikat, "_blank");
+    },
+    openKontrakKonversi:function(){
+        window.open(app.fileUrlKontrakKonversi, "_blank");
+    },
     profileIsEmpty,
     submitEntry,
     addRow: function() { 
@@ -263,6 +285,7 @@
         // item.status='delete'
         // Vue.set(this.items,index,item)        
     },
+    submitFeedback,
     submitForm,
     onClickButtonCari,
     submitFileKontrak,
@@ -381,6 +404,8 @@
                     app.profile.no_surat=_profil.no_surat;
                     app.dosenTerpilih.name=_profil.dosen_nama;
                     app.dosenTerpilih.email=_profil.dosen_email;
+                    app.fileUrlKontrakKonversi = _profil.bukti_kontrak_konversi;
+                    app.fileUrlSertifikat = _profil.bukti_sertifikat;
 
                     app.profileDraft.name=_profil.nama;
                     app.profileDraft.nim=_profil.nim;
@@ -583,6 +608,66 @@
     daftarDosen.forEach((e,i)=>{
         app.dosen.push({name:e.nama_dosen,email:e.email_dosen});
     })
+ }
+ function submitFeedback(e){
+
+    var urlReview = `${baseUrl}?action=9`;
+     console.log(e);
+     var dataTobeUpload = {
+         review_feedback:app.feedback,
+         review_status:e,
+         no_surat:no_surat
+     }
+     console.log("dataTobeUpload "+JSON.stringify(dataTobeUpload));
+     Swal.fire({
+            title: 'Review akan disimpan?',
+            text: "Periksa dengan teliti",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Ya, Submit'
+            })
+            .then((result) => {
+            if (result.isConfirmed) {
+                let loader = this.$loading.show({
+                    loader: 'dots'
+                });
+                axios({
+                    method: "post",
+                    url: urlReview,
+                    data: dataTobeUpload,
+                    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                                "Access-Control-Allow-Origin": "*"
+                    })
+                    .then(function (response) {
+                        //handle success
+                        loader.hide();
+                        console.log(response);
+                        if(response.data.status){
+                            Toast.fire({
+                                    icon: 'success',
+                                    title: 'Review berhasil diperbarui'
+                                    })
+                        }else{
+                            Toast.fire({
+                                    icon: 'error',
+                                    title: 'Review gagal diperbarui'
+                                    })
+                        }
+                    })
+                    .catch(function (response) {
+                        //handle error
+                        console.log(response);
+                        loader.hide();
+                            Toast.fire({
+                                    icon: 'error',
+                                    title: 'Review gagal diperbarui'
+                                    })
+                    });
+
+            }
+        })
 
  }
  </script>
