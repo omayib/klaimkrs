@@ -158,10 +158,10 @@
             <tbody>
                 <tr v-for='(user, index) in items'>                            
                     <td>
-                    <input  v-model="user.objective"  class="form-control" type="text" :disabled="user.status==='delete'" />
+                    <input v-model="user.objective"  class="form-control" type="text" :disabled="user.status==='delete'" />
                     </td>
                     <td>
-                    <input v-model="user.durasi" class="form-control" type="text" :disabled="user.status==='delete'" />
+                    <input v-model="user.durasi" class="form-control" type="number" :disabled="user.status==='delete'" />
                     </td>
                     <td>
                     <input v-model="user.kode" class="form-control" type="text" :disabled="user.status==='delete'"/>
@@ -170,10 +170,10 @@
                     <input v-model="user.matkul" class="form-control" type="text" :disabled="user.status==='delete'"/>
                     </td>
                     <td>
-                    <input v-model="user.sks" class="form-control" type="text" :disabled="user.status==='delete'"/>
+                    <input v-model="user.sks" class="form-control" type="number" :disabled="user.status==='delete'"/>
                     </td>
                     <td>
-                    <input v-model="user.angka" class="form-control" type="text" :disabled="user.status==='delete'"/>
+                    <input v-model="user.angka" class="form-control" type="number" :disabled="user.status==='delete'"/>
                     </td>
                     <td>
                     <input v-model="user.huruf" class="form-control" type="text" :disabled="user.status==='delete'"/>
