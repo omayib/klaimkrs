@@ -212,7 +212,7 @@
     timer: 3000,
     timerProgressBar: true
     })
- var key="AKfycbwI84E65d2C8AjwYzZ0zZI52WsKBAAAGWUYPtPwm7ynXYe1Z2MdP9-ehIxvmUphRLKL";//"AKfycbyC8gSkitA2FN3n3DZziIMJla_4xSDRel5SEDiDNMmNXaI00Oa98Th-mWDC3N12YefX";
+ var key="AKfycbywh-n2toBL-QLG7u3ZWyhfy63j6ErdJZ-YKuXCcskVE-exAYKdDfGDMRo9ub1ZPEbx";//"AKfycbyC8gSkitA2FN3n3DZziIMJla_4xSDRel5SEDiDNMmNXaI00Oa98Th-mWDC3N12YefX";
  var baseUrl="https://script.google.com/macros/s/"+key+"/exec";
  var app = new Vue({
      
@@ -230,13 +230,13 @@
     dosenTerpilih:{name:'',email:''},
     profileDraft:{name:'',nim:'',kegiatan:'',email:'',no_surat:''},
     profile:{name:'',nim:'',kegiatan:'',email:'',no_surat:''},
-    items:[{id:'',objective:'',durasi:'',kode:'',matkul:'',sks:'',angka:'',huruf:'',email:'',no_surat:'',status:''}]     
+    items:[]     
    },
    mounted(){
     console.log("mounted")
-     
+
      const qs = new URLSearchParams({action:5});
-     const url = `${baseUrl}?${qs}`;
+     const url = baseUrl+"?"+qs;
      // axios.get(url)
      //     .then(result=>{
      //         console.log(result);
@@ -313,7 +313,7 @@
    }  
   })
   function submitEntry(){
-    var urlProfile = `${baseUrl}?action=8`;
+    var urlProfile = baseUrl+"?action=8";
       var dataTobeUpload ={
           nama:this.profileDraft.name,
           email:this.profileDraft.email,
@@ -527,7 +527,7 @@
     fr.onload = f => {
         axios({
                 method: "post",
-                url: `${baseUrl}?${qs}`,
+                url: baseUrl+"?"+qs,
                 data: JSON.stringify([...new Int8Array(f.target.result)])                               
             }).then(function(r){
                 app.fileUrlSertifikat = r.data.fileUrl;
@@ -571,7 +571,7 @@
     fr.onload = f => {
         axios({
                 method: "post",
-                url: `${baseUrl}?${qs}`,
+                url: baseUrl+"?"+qs,
                 data: JSON.stringify([...new Int8Array(f.target.result)])
             }).then(function(r){
                 app.fileUrlKontrakKonversi = r.data.fileUrl;
@@ -607,7 +607,7 @@
      console.log("mounted")
      
     const qs = new URLSearchParams({action:5});
-    const url = `${baseUrl}?${qs}`;
+    const url = baseUrl+"?"+qs;
     // axios.get(url)
     //     .then(result=>{
     //         console.log(result);
