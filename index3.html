@@ -212,7 +212,7 @@
     timer: 3000,
     timerProgressBar: true
     })
- var key="AKfycbywh-n2toBL-QLG7u3ZWyhfy63j6ErdJZ-YKuXCcskVE-exAYKdDfGDMRo9ub1ZPEbx";//"AKfycbyC8gSkitA2FN3n3DZziIMJla_4xSDRel5SEDiDNMmNXaI00Oa98Th-mWDC3N12YefX";
+ var key="AKfycbz7BEPbA3K7n6pySb2VC95R_edqktiDUtUNb4W5yblVDRyjLFRopFbrcfgZfz0zOldx";//"AKfycbyC8gSkitA2FN3n3DZziIMJla_4xSDRel5SEDiDNMmNXaI00Oa98Th-mWDC3N12YefX";
  var baseUrl="https://script.google.com/macros/s/"+key+"/exec";
  var app = new Vue({
      
@@ -249,12 +249,13 @@
      daftarDosen.forEach((e,i)=>{
         this.dosen.push({name:e.nama_dosen,email:e.email_dosen});
      })
-     console.log(this.dosen);
+     this.fetchOpsiKegiatan();
    },
     components: {
         Loading: VueLoading
     },
    methods: {
+    fetchOpsiKegiatan,
     openSertifikat:function(){
         window.open(app.fileUrlSertifikat, "_blank");
     },
@@ -680,8 +681,26 @@
 
             }
         })
-
  }
+
+ function fetchOpsiKegiatan(){
+     
+    var urlKegiatan = baseUrl+"?action=12";
+    axios.get(urlKegiatan)
+        .then(result=>{
+            const items = result.data.data;
+            if(items.length>0){
+                app.opsiKegiatan=[];
+                items.forEach((item,i)=>{
+                    app.opsiKegiatan.push(item.kegiatan);
+                })
+            }
+        })
+        .catch(error=>{
+            console.log(error);
+        })
+ }
+
  </script>
  </body>
  </html> 
