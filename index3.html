@@ -147,8 +147,7 @@
     <div class="panel panel-primary">
      <div class="panel-heading">STEP 3. FORM KONVERSI</div>                  
         <div class="panel-body"> 
-            <i class="fa fa-plus pull-right"  @click="addRow" style="font-size:25px;color:#337ab7;cursor:pointer"></i>
-            
+            <button class="btn btn-primary pull-right" @click="addRow" ><i class="fa fa-plus"></i> tambah baris</button>
             <form v-on:submit.prevent="submitForm">
             <table class="table table-bordered">
             <thead class="text text-success">
