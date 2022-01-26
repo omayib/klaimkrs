@@ -132,6 +132,13 @@
                 <button class="btn btn-primary" @click="submitFileKontrak" :disabled='profileIsEmpty()'>SIMPAN</button>
                 <button class="btn btn-primary" v-if="(fileUrlKontrakKonversi)" @click="openKontrakKonversi" ><i class="fa fa-eye"></i> LIHAT</button>
             </div>
+             
+            <div class="container">
+                <label>File Surat Rekomendasi
+                    <input type="file"  @change="handleFileUploadSuratRekomendasi( $event )"/>
+                </label>
+                <button class="btn btn-primary" @click="submitFileSuratRekomendasi" :disabled='profileIsEmpty()'>SIMPAN</button>
+                <button class="btn btn-primary" v-if="(fileUrlSuratRekomendasi)" @click="openSuratRekomendasi" ><i class="fa fa-eye"></i> LIHAT</button>
             </div>
         </div>
     </div>
@@ -221,8 +228,10 @@
     opsiKegiatan:["Studi Independen","Magang Bersertifikat","Bangkit","Pertukaran Pelajar"],
     fileUrlSertifikat:"",
     fileUrlKontrakKonversi:"",   
+    fileUrlSuratRekomendasi:"",
     fileSertifikat:"",  
     fileKontrak:"",
+    fileSuratRekomendasi:"",
     visible:false,
     access_id:"",
     access_id_message:"001/FIK-IF/AMIKOM/REK.STUIND/07/2021",
@@ -261,6 +270,9 @@
     },
     openKontrakKonversi:function(){
         window.open(app.fileUrlKontrakKonversi, "_blank");
+    },
+    openSuratRekomendasi:function(){
+        window.open(app.fileUrlSuratRekomendasi, "_blank");
     },
     onClickButtonSubmit,
     profileIsEmpty,
@@ -304,14 +316,19 @@
     onClickButtonCari,
     submitFileKontrak,
     submitFileSertifikat,
+    submitFileSuratRekomendasi,
     fetchDosen,
     handleFileUploadSertifikat(event){
         this.fileSertifikat = event.target.files[0];
-      },
+    },
     handleFileUploadKontrak(event){
         this.fileKontrak = event.target.files[0];
-      }
-   }  
+    },
+    handleFileUploadSuratRekomendasi(event){
+       this.fileSuratRekomendasi = event.target.files[0];
+   } 
+   },
+   
   })
   function submitEntry(){
     var urlProfile = baseUrl+"?action=8";
@@ -419,6 +436,7 @@
                     app.dosenTerpilih.email=_profil.dosen_email;
                     app.fileUrlKontrakKonversi = _profil.bukti_kontrak_konversi;
                     app.fileUrlSertifikat = _profil.bukti_sertifikat;
+                    app.fileUrlSuratRekomendasi = _profil.bukti_rekomendasi;
 
                     app.profileDraft.name=_profil.nama;
                     app.profileDraft.nim=_profil.nim;
@@ -579,6 +597,48 @@
                 Swal.fire(
                     'Good job!',
                     'Kamu berhasil mengunngah kontrak konversi',
+                    'success'
+                    )
+                })
+            .catch(error =>{
+                loader.hide();
+                Swal.fire('Ops!',
+                    'Terjadi kesalahan, mungkin nomer surat tidak valid',
+                    'error'
+                    )
+            });
+        
+    }
+ }
+ function submitFileSuratRekomendasi(){
+    if(!this.fileSuratRekomendasi){
+        Swal.fire('Ops!',
+                    'File surat rekomendasi konversi belum dipilih',
+                    'error'
+                    )
+         return;
+    }
+    let loader = this.$loading.show({
+                loader: 'dots'
+            });
+    const qs = new URLSearchParams({filename:this.fileSuratRekomendasi.name, 
+                                    mimeType: this.fileSuratRekomendasi.type, 
+                                    action:7,
+                                    noSurat:this.profile.no_surat,
+                                    jenis:'suratrekomendasi'});
+    const fr = new FileReader();
+    fr.readAsArrayBuffer(this.fileSuratRekomendasi);
+    fr.onload = f => {
+        axios({
+                method: "post",
+                url: baseUrl+"?"+qs,
+                data: JSON.stringify([...new Int8Array(f.target.result)])
+            }).then(function(r){
+                app.fileUrlSuratRekomendasi = r.data.data.fileUrl;
+                loader.hide();
+                Swal.fire(
+                    'Good job!',
+                    'Kamu berhasil mengunngah surat rekomendasi',
                     'success'
                     )
                 })
