@@ -118,13 +118,17 @@
             <div class="container">
                 <label>File Sertifikat
                 </label>
-                <button class="btn btn-primary" @click="openSertifikat" >Lihat</button>
+                <button class="btn btn-primary" v-if="(fileUrlSertifikat)" @click="openSertifikat" ><i class="fa fa-eye"></i> Lihat</button>
             </div>  
             <div class="container">
                 <label>File Kontrak Konversi
                 </label>
-                <button class="btn btn-primary" @click="openKontrakKonversi">Lihat</button>
+                <button class="btn btn-primary" v-if="(fileUrlKontrakKonversi)" @click="openKontrakKonversi"><i class="fa fa-eye"></i> Lihat</button>
             </div>
+            <div class="container">
+                <label>File Surat Rekomendasi
+                </label>
+                <button class="btn btn-primary" v-if="(fileUrlSuratRekomendasi)" @click="openSuratRekomendasi" ><i class="fa fa-eye"></i> LIHAT</button>
             </div>
         </div>
     </div>
@@ -205,7 +209,8 @@
       </div> 
 </main>
 <script >
- var no_surat="001/FIK-IF/AMIKOM/REK.STUIND/07/2021";
+ var no_surat="111/FIK-IF/AMIKOM/REK.STUIND/07/2021";
+//  var no_surat=<?=no_surat?>;
  Vue.use(VueLoading);
  Vue.component('v-select', VueSelect.VueSelect);
  const Toast = Swal.mixin({
@@ -215,7 +220,7 @@
     timer: 3000,
     timerProgressBar: true
     })
- var key="AKfycbywh-n2toBL-QLG7u3ZWyhfy63j6ErdJZ-YKuXCcskVE-exAYKdDfGDMRo9ub1ZPEbx";//"AKfycbyC8gSkitA2FN3n3DZziIMJla_4xSDRel5SEDiDNMmNXaI00Oa98Th-mWDC3N12YefX";
+ var key="AKfycbz7BEPbA3K7n6pySb2VC95R_edqktiDUtUNb4W5yblVDRyjLFRopFbrcfgZfz0zOldx";//"AKfycbyC8gSkitA2FN3n3DZziIMJla_4xSDRel5SEDiDNMmNXaI00Oa98Th-mWDC3N12YefX";
  var baseUrl="https://script.google.com/macros/s/"+key+"/exec";
  var app = new Vue({
      
@@ -224,8 +229,10 @@
     opsiKegiatan:["Studi Independen","Magang Bersertifikat","Bangkit","Pertukaran Pelajar"],
     fileUrlSertifikat:"",
     fileUrlKontrakKonversi:"",   
+    fileUrlSuratRekomendasi:"",
     fileSertifikat:"",  
     fileKontrak:"",
+    fileSuratRekomendasi:"",
     visible:false,
     feedback:"",
     access_id:"",
@@ -238,16 +245,21 @@
    },
    mounted(){
         this.onClickButtonCari();
+        this.fetchOpsiKegiatan();
    },
     components: {
         Loading: VueLoading
     },
    methods: {
+    fetchOpsiKegiatan,
     openSertifikat:function(){
         window.open(app.fileUrlSertifikat, "_blank");
     },
     openKontrakKonversi:function(){
         window.open(app.fileUrlKontrakKonversi, "_blank");
+    },
+    openSuratRekomendasi:function(){
+        window.open(app.fileUrlSuratRekomendasi, "_blank");
     },
     profileIsEmpty,
     submitEntry,
@@ -407,6 +419,7 @@
                     app.dosenTerpilih.email=_profil.dosen_email;
                     app.fileUrlKontrakKonversi = _profil.bukti_kontrak_konversi;
                     app.fileUrlSertifikat = _profil.bukti_sertifikat;
+                    app.fileUrlSuratRekomendasi = _profil.bukti_rekomendasi;
 
                     app.profileDraft.name=_profil.nama;
                     app.profileDraft.nim=_profil.nim;
@@ -673,6 +686,23 @@
         })
 
  }
+ function fetchOpsiKegiatan(){
+     
+     var urlKegiatan = baseUrl+"?action=12";
+     axios.get(urlKegiatan)
+         .then(result=>{
+             const items = result.data.data;
+             if(items.length>0){
+                 app.opsiKegiatan=[];
+                 items.forEach((item,i)=>{
+                     app.opsiKegiatan.push(item.kegiatan);
+                 })
+             }
+         })
+         .catch(error=>{
+             console.log(error);
+         })
+  }
  </script>
  </body>
  </html> 
