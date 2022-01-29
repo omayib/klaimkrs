@@ -325,12 +325,12 @@
                 <tbody>
                   <tr v-for="(user, index) in items">
                     <td>
-                      <input
+                      <textarea
                         v-model="user.objective"
                         class="form-control"
                         type="text"
-                        :disabled="user.status==='delete'"
-                      />
+                        :disabled="user.status==='delete'">
+                      </textarea> 
                     </td>
                     <td>
                       <input
