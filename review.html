@@ -115,20 +115,25 @@
     <div class="panel panel-primary">
         <div class="panel-heading">STEP 2. BUKTI KEGIATAN</div>                 
         <div class="panel-body">  
-            <div class="container">
+            <div class="container mt-2">
                 <label>File Sertifikat
                 </label>
                 <button class="btn btn-primary" v-if="(fileUrlSertifikat)" @click="openSertifikat" ><i class="fa fa-eye"></i> Lihat</button>
             </div>  
-            <div class="container">
+            <div class="container mt-2">
                 <label>File Kontrak Konversi
                 </label>
                 <button class="btn btn-primary" v-if="(fileUrlKontrakKonversi)" @click="openKontrakKonversi"><i class="fa fa-eye"></i> Lihat</button>
             </div>
-            <div class="container">
+            <div class="container mt-2">
                 <label>File Surat Rekomendasi
                 </label>
                 <button class="btn btn-primary" v-if="(fileUrlSuratRekomendasi)" @click="openSuratRekomendasi" ><i class="fa fa-eye"></i> LIHAT</button>
+            </div>
+            <div class="container mt-2">
+                <label>File Laporan
+                </label>
+                <button class="btn btn-primary" v-if="(fileUrlLaporan)" @click="openLaporan" ><i class="fa fa-eye"></i> LIHAT</button>
             </div>
         </div>
     </div>
@@ -230,6 +235,7 @@
     fileUrlSertifikat:"",
     fileUrlKontrakKonversi:"",   
     fileUrlSuratRekomendasi:"",
+    fileUrlLaporan: "",
     fileSertifikat:"",  
     fileKontrak:"",
     fileSuratRekomendasi:"",
@@ -260,6 +266,9 @@
     },
     openSuratRekomendasi:function(){
         window.open(app.fileUrlSuratRekomendasi, "_blank");
+    },
+    openLaporan: function () {
+        window.open(app.fileUrlLaporan, "_blank");
     },
     profileIsEmpty,
     submitEntry,
@@ -420,6 +429,7 @@
                     app.fileUrlKontrakKonversi = _profil.bukti_kontrak_konversi;
                     app.fileUrlSertifikat = _profil.bukti_sertifikat;
                     app.fileUrlSuratRekomendasi = _profil.bukti_rekomendasi;
+                    app.fileUrlLaporan = _profil.bukti_laporan;
 
                     app.profileDraft.name=_profil.nama;
                     app.profileDraft.nim=_profil.nim;
