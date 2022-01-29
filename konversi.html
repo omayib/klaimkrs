@@ -239,6 +239,30 @@
                     <i class="fa fa-eye"></i> LIHAT
                   </button>
                 </div>
+
+                <div class="container mt-2">
+                  <label
+                    >File Laporan
+                    <input
+                      type="file"
+                      @change="handleFileUploadLaporan( $event )"
+                    />
+                  </label>
+                  <button
+                    class="btn btn-primary"
+                    @click="submitFileLaporan"
+                    :disabled="profileIsEmpty()"
+                  >
+                    SIMPAN
+                  </button>
+                  <button
+                    class="btn btn-primary"
+                    v-if="(fileUrlLaporan)"
+                    @click="openLaporan"
+                  >
+                    <i class="fa fa-eye"></i> LIHAT
+                  </button>
+                </div>
                 <p class="text-muted" style="padding: 20px 10px 0px;">
                   Petunjuk : Silahkan upload file dengan menekan tombol
                   "SIMPAN", pastikan file diupload sesuai pada form yang
@@ -409,9 +433,11 @@
           fileUrlSertifikat: "",
           fileUrlKontrakKonversi: "",
           fileUrlSuratRekomendasi: "",
+          fileUrlLaporan: "",
           fileSertifikat: "",
           fileKontrak: "",
           fileSuratRekomendasi: "",
+          fileLaporan: "",
           visible: false,
           access_id: "",
           access_id_message: "001/FIK-IF/AMIKOM/REK.STUIND/07/2021",
@@ -871,6 +897,9 @@
           openSuratRekomendasi: function () {
             window.open(app.fileUrlSuratRekomendasi, "_blank");
           },
+          openLaporan: function () {
+            window.open(app.fileUrlLaporan, "_blank");
+          },
           onClickButtonSubmit,
           profileIsEmpty,
           submitEntry,
@@ -922,6 +951,7 @@
           submitFileKontrak,
           submitFileSertifikat,
           submitFileSuratRekomendasi,
+          submitFileLaporan,
           fetchDosen,
           handleFileUploadSertifikat(event) {
             this.fileSertifikat = event.target.files[0];
@@ -931,6 +961,9 @@
           },
           handleFileUploadSuratRekomendasi(event) {
             this.fileSuratRekomendasi = event.target.files[0];
+          },
+          handleFileUploadLaporan(event) {
+            this.fileLaporan = event.target.files[0];
           },
         },
       });
@@ -1037,6 +1070,7 @@
                 app.fileUrlKontrakKonversi = _profil.bukti_kontrak_konversi;
                 app.fileUrlSertifikat = _profil.bukti_sertifikat;
                 app.fileUrlSuratRekomendasi = _profil.bukti_rekomendasi;
+                app.fileUrlLaporan = _profil.bukti_laporan;
 
                 app.profileDraft.name = _profil.nama;
                 app.profileDraft.nim = _profil.nim;
@@ -1249,6 +1283,52 @@
               Swal.fire(
                 "Good job!",
                 "Kamu berhasil mengunngah surat rekomendasi",
+                "success"
+              );
+            })
+            .catch((error) => {
+              loader.hide();
+              Swal.fire(
+                "Ops!",
+                "Terjadi kesalahan, mungkin nomer surat tidak valid",
+                "error"
+              );
+            });
+        };
+      }
+      function submitFileLaporan() {
+        if (!this.fileLaporan) {
+          Swal.fire(
+            "Ops!",
+            "File surat rekomendasi konversi belum dipilih",
+            "error"
+          );
+          return;
+        }
+        let loader = this.$loading.show({
+          loader: "dots",
+        });
+        const qs = new URLSearchParams({
+          filename: this.fileLaporan.name,
+          mimeType: this.fileLaporan.type,
+          action: 7,
+          noSurat: this.profile.no_surat,
+          jenis: "laporan",
+        });
+        const fr = new FileReader();
+        fr.readAsArrayBuffer(this.fileLaporan);
+        fr.onload = (f) => {
+          axios({
+            method: "post",
+            url: baseUrl + "?" + qs,
+            data: JSON.stringify([...new Int8Array(f.target.result)]),
+          })
+            .then(function (r) {
+              app.fileUrlLaporan = r.data.data.fileUrl;
+              loader.hide();
+              Swal.fire(
+                "Good job!",
+                "Kamu berhasil mengunggah laporan",
                 "success"
               );
             })
