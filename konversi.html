@@ -287,6 +287,30 @@
                     <i class="fa fa-eye"></i> LIHAT
                   </button>
                 </div>
+
+                <div class="container mt-2">
+                  <label
+                    >File KHS
+                    <input
+                      type="file"
+                      @change="handleFileUploadKhs( $event )"
+                    />
+                  </label>
+                  <button
+                    class="btn btn-primary"
+                    @click="submitFileKhs"
+                    :disabled="profileIsEmpty()"
+                  >
+                    SIMPAN
+                  </button>
+                  <button
+                    class="btn btn-primary"
+                    v-if="(fileUrlKhs)"
+                    @click="openKhs"
+                  >
+                    <i class="fa fa-eye"></i> LIHAT
+                  </button>
+                </div>
                 <p class="text-muted" style="padding: 20px 10px 0px;">
                   Petunjuk : Silahkan upload file dengan menekan tombol
                   "SIMPAN", pastikan file diupload sesuai pada form yang
@@ -317,6 +341,10 @@
                       Bukti nilai yang dikeluarkan oleh mitra MBKM (Penyelenggara Kegiatan)
                       <a href="https://drive.google.com/file/d/1_RKVOoX1hd0RvQkzOicH9FXkOv2qZpiK/view" target="_blank">Lihat contoh ini.</a>
                     </li>
+                    <li>
+                      <strong>File KHS</strong><br>
+                      Lampirkan screenshoot KHS semester berjalan saat ini sebagai bukti bahwa matakuliah konversi sudah diambil saat KRS-an. 
+                     </li>
                   </ul>
                 </p>
               </div>
@@ -526,11 +554,13 @@
           fileUrlSuratRekomendasi: "",
           fileUrlLaporan: "",
           fileUrlNilai: "",
+          fileUrlKhs: "",
           fileSertifikat: "",
           fileKontrak: "",
           fileSuratRekomendasi: "",
           fileLaporan: "",
           fileNilai: "",
+          fileKhs: "",
           visible: false,
           access_id: "",
           access_id_message: "001/FIK-IF/AMIKOM/REK.STUIND/07/2021",
@@ -571,6 +601,9 @@
           },
           openNilai: function () {
             window.open(app.fileUrlNilai, "_blank");
+          },
+          openKhs: function () {
+            window.open(app.fileUrlKhs, "_blank");
           },
           onClickButtonSubmit,
           profileIsEmpty,
@@ -625,6 +658,7 @@
           submitFileSuratRekomendasi,
           submitFileLaporan,
           submitFileNilai,
+          submitFileKhs,
           fetchDosen,
           handleFileUploadSertifikat(event) {
             this.fileSertifikat = event.target.files[0];
@@ -640,6 +674,9 @@
           },
           handleFileUploadNilai(event) {
             this.fileNilai = event.target.files[0];
+          },
+          handleFileUploadKhs(event) {
+            this.fileKhs = event.target.files[0];
           },
         },
       });
@@ -748,6 +785,7 @@
                 app.fileUrlSuratRekomendasi = _profil.bukti_rekomendasi;
                 app.fileUrlLaporan = _profil.bukti_laporan;
                 app.fileUrlNilai = _profil.bukti_nilai;
+                app.fileUrlKhs = _profil.bukti_khs;
 
                 app.profileDraft.name = _profil.nama;
                 app.profileDraft.nim = _profil.nim;
@@ -1048,6 +1086,52 @@
           })
             .then(function (r) {
               app.fileUrlNilai = r.data.data.fileUrl;
+              loader.hide();
+              Swal.fire(
+                "Good job!",
+                "Kamu berhasil mengunggah laporan",
+                "success"
+              );
+            })
+            .catch((error) => {
+              loader.hide();
+              Swal.fire(
+                "Ops!",
+                "Terjadi kesalahan, mungkin nomer surat tidak valid",
+                "error"
+              );
+            });
+        };
+      }
+      function submitFileKhs() {
+        if (!this.fileKhs) {
+          Swal.fire(
+            "Ops!",
+            "File surat rekomendasi konversi belum dipilih",
+            "error"
+          );
+          return;
+        }
+        let loader = this.$loading.show({
+          loader: "dots",
+        });
+        const qs = new URLSearchParams({
+          filename: this.fileKhs.name,
+          mimeType: this.fileKhs.type,
+          action: 7,
+          noSurat: this.profile.no_surat,
+          jenis: "khs",
+        });
+        const fr = new FileReader();
+        fr.readAsArrayBuffer(this.fileKhs);
+        fr.onload = (f) => {
+          axios({
+            method: "post",
+            url: baseUrl + "?" + qs,
+            data: JSON.stringify([...new Int8Array(f.target.result)]),
+          })
+            .then(function (r) {
+              app.fileUrlKhs = r.data.data.fileUrl;
               loader.hide();
               Swal.fire(
                 "Good job!",
