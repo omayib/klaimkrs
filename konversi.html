@@ -55,6 +55,7 @@
       </p>
       <h1 style="text-align: center;">PENGAJUAN KLAIM KONVERSI SKS - MBKM</h1>
       <p style="text-align: center;">Aplikasi BIMA 1.0.2</p>
+      <p style="text-align: center;"><em>Pastikan koneksi internet Anda stabil dan kencang. Pada proses unggah file mungkin akan memakan waktu.</em></p>
     </div>
     <main class="container" id="app">
       <loading :active.sync="visible" :can-cancel="true"></loading>
@@ -263,6 +264,29 @@
                     <i class="fa fa-eye"></i> LIHAT
                   </button>
                 </div>
+                <div class="container mt-2">
+                  <label
+                    >File Nilai
+                    <input
+                      type="file"
+                      @change="handleFileUploadNilai( $event )"
+                    />
+                  </label>
+                  <button
+                    class="btn btn-primary"
+                    @click="submitFileNilai"
+                    :disabled="profileIsEmpty()"
+                  >
+                    SIMPAN
+                  </button>
+                  <button
+                    class="btn btn-primary"
+                    v-if="(fileUrlNilai)"
+                    @click="openNilai"
+                  >
+                    <i class="fa fa-eye"></i> LIHAT
+                  </button>
+                </div>
                 <p class="text-muted" style="padding: 20px 10px 0px;">
                   Petunjuk : Silahkan upload file dengan menekan tombol
                   "SIMPAN", pastikan file diupload sesuai pada form yang
@@ -287,6 +311,11 @@
                       <strong>File Laporan</strong><br>
                       Dokumen laporan kegiatan MBKM yang Anda ikuti. Bila kegiatan yang Anda ikuti telah memiliki standar laporan, silakan langsung diunggah. Namun bila belum, Anda wajib membuat dengan mengikuti format berikut. 
                       <a href="https://docs.google.com/document/d/1BIbupjleze3C9fH7jVU1jw5-tPZhO54Re-MxJwRC0pA/view" target="_blank">Lihat contoh ini.</a> 
+                    </li>
+                    <li>
+                      <strong>File Nilai</strong><br>
+                      Bukti nilai yang dikeluarkan oleh mitra MBKM (Penyelenggara Kegiatan)
+                      <a href="https://drive.google.com/file/d/1_RKVOoX1hd0RvQkzOicH9FXkOv2qZpiK/view" target="_blank">Lihat contoh ini.</a>
                     </li>
                   </ul>
                 </p>
@@ -496,10 +525,12 @@
           fileUrlKontrakKonversi: "",
           fileUrlSuratRekomendasi: "",
           fileUrlLaporan: "",
+          fileUrlNilai: "",
           fileSertifikat: "",
           fileKontrak: "",
           fileSuratRekomendasi: "",
           fileLaporan: "",
+          fileNilai: "",
           visible: false,
           access_id: "",
           access_id_message: "001/FIK-IF/AMIKOM/REK.STUIND/07/2021",
@@ -537,6 +568,9 @@
           },
           openLaporan: function () {
             window.open(app.fileUrlLaporan, "_blank");
+          },
+          openNilai: function () {
+            window.open(app.fileUrlNilai, "_blank");
           },
           onClickButtonSubmit,
           profileIsEmpty,
@@ -590,6 +624,7 @@
           submitFileSertifikat,
           submitFileSuratRekomendasi,
           submitFileLaporan,
+          submitFileNilai,
           fetchDosen,
           handleFileUploadSertifikat(event) {
             this.fileSertifikat = event.target.files[0];
@@ -602,6 +637,9 @@
           },
           handleFileUploadLaporan(event) {
             this.fileLaporan = event.target.files[0];
+          },
+          handleFileUploadNilai(event) {
+            this.fileNilai = event.target.files[0];
           },
         },
       });
@@ -709,6 +747,7 @@
                 app.fileUrlSertifikat = _profil.bukti_sertifikat;
                 app.fileUrlSuratRekomendasi = _profil.bukti_rekomendasi;
                 app.fileUrlLaporan = _profil.bukti_laporan;
+                app.fileUrlNilai = _profil.bukti_nilai;
 
                 app.profileDraft.name = _profil.nama;
                 app.profileDraft.nim = _profil.nim;
@@ -963,6 +1002,52 @@
           })
             .then(function (r) {
               app.fileUrlLaporan = r.data.data.fileUrl;
+              loader.hide();
+              Swal.fire(
+                "Good job!",
+                "Kamu berhasil mengunggah laporan",
+                "success"
+              );
+            })
+            .catch((error) => {
+              loader.hide();
+              Swal.fire(
+                "Ops!",
+                "Terjadi kesalahan, mungkin nomer surat tidak valid",
+                "error"
+              );
+            });
+        };
+      }
+      function submitFileNilai() {
+        if (!this.fileNilai) {
+          Swal.fire(
+            "Ops!",
+            "File surat rekomendasi konversi belum dipilih",
+            "error"
+          );
+          return;
+        }
+        let loader = this.$loading.show({
+          loader: "dots",
+        });
+        const qs = new URLSearchParams({
+          filename: this.fileNilai.name,
+          mimeType: this.fileNilai.type,
+          action: 7,
+          noSurat: this.profile.no_surat,
+          jenis: "nilai",
+        });
+        const fr = new FileReader();
+        fr.readAsArrayBuffer(this.fileNilai);
+        fr.onload = (f) => {
+          axios({
+            method: "post",
+            url: baseUrl + "?" + qs,
+            data: JSON.stringify([...new Int8Array(f.target.result)]),
+          })
+            .then(function (r) {
+              app.fileUrlNilai = r.data.data.fileUrl;
               loader.hide();
               Swal.fire(
                 "Good job!",
