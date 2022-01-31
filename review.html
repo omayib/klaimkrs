@@ -111,7 +111,7 @@
                   </div>
 
                   <div class="form-group">
-                    <button class="btn btn-primary">SIMPAN</button>
+                    <button :disabled=true class="btn btn-primary">SIMPAN</button>
                   </div>
                 </form>
                 <p class="text-muted">
@@ -128,68 +128,90 @@
             <div class="panel panel-primary">
               <div class="panel-heading">STEP 2. UNGGAH BUKTI KEGIATAN</div>
               <div class="panel-body">
-                <div class="container">
-                  <label
-                    >File Sertifikat
-                  </label>
-                  <button
-                    class="btn btn-primary"
-                    v-if="(fileUrlSertifikat)"
-                    @click="openSertifikat"
-                  >
-                    <i class="fa fa-eye"></i> LIHAT
-                  </button>
-                </div>
-                <div class="container mt-2">
-                  <label
-                    >File Kontrak Konversi
-                  </label>
-                  <button
-                    class="btn btn-primary"
-                    v-if="(fileUrlKontrakKonversi)"
-                    @click="openKontrakKonversi"
-                  >
-                    <i class="fa fa-eye"></i> LIHAT
-                  </button>
-                </div>
-
-                <div class="container mt-2">
-                  <label
-                    >File Surat Rekomendasi
-                  </label>
-                  <button
-                    class="btn btn-primary"
-                    v-if="(fileUrlSuratRekomendasi)"
-                    @click="openSuratRekomendasi"
-                  >
-                    <i class="fa fa-eye"></i> LIHAT
-                  </button>
-                </div>
-
-                <div class="container mt-2">
-                  <label
-                    >File Laporan
-                  </label>
-                  <button
-                    class="btn btn-primary"
-                    v-if="(fileUrlLaporan)"
-                    @click="openLaporan"
-                  >
-                    <i class="fa fa-eye"></i> LIHAT
-                  </button>
-                </div>
-                <div class="container mt-2">
-                  <label
-                    >File Nilai
-                  </label>
-                  <button
-                    class="btn btn-primary"
-                    v-if="(fileUrlNilai)"
-                    @click="openNilai"
-                  >
-                    <i class="fa fa-eye"></i> LIHAT
-                  </button>
-                </div>
+                <table class="table" style="width:100%">
+                  <tr>
+                    <td>
+                      <label>File Sertifikat</label>
+                    </td>
+                    <td>
+                      <button
+                        class="btn btn-primary"
+                        v-if="(fileUrlSertifikat)"
+                        @click="openSertifikat"
+                      >
+                        <i class="fa fa-eye"></i> LIHAT
+                      </button>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td><label
+                      >File Kontrak Konversi
+                    </label></td>
+                    <td><button
+                      class="btn btn-primary"
+                      v-if="(fileUrlKontrakKonversi)"
+                      @click="openKontrakKonversi"
+                    >
+                      <i class="fa fa-eye"></i> LIHAT
+                    </button></td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <label
+                        >File Surat Rekomendasi
+                      </label>
+                    </td>
+                    <td>
+                      <button
+                      class="btn btn-primary"
+                      v-if="(fileUrlSuratRekomendasi)"
+                      @click="openSuratRekomendasi"
+                    >
+                      <i class="fa fa-eye"></i> LIHAT
+                    </button>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <label
+                        >File Laporan
+                      </label>
+                    </td>
+                    <td><button
+                      class="btn btn-primary"
+                      v-if="(fileUrlLaporan)"
+                      @click="openLaporan"
+                    >
+                      <i class="fa fa-eye"></i> LIHAT
+                    </button></td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <label
+                        >File Nilai
+                      </label></td>
+                    <td>
+                      <button
+                        class="btn btn-primary"
+                        v-if="(fileUrlNilai)"
+                        @click="openNilai"
+                      >
+                        <i class="fa fa-eye"></i> LIHAT
+                      </button></td>
+                  </tr>
+                  <tr>
+                    <td><label
+                      >File KHS
+                    </label></td>
+                    <td><button
+                      class="btn btn-primary"
+                      v-if="(fileUrlKhs)"
+                      @click="openKhs"
+                    >
+                      <i class="fa fa-eye"></i> LIHAT
+                    </button></td>
+                  </tr>
+                </table>
                 <p class="text-muted" style="padding: 20px 10px 0px;">
                   Petunjuk : Silahkan upload file dengan menekan tombol
                   "SIMPAN", pastikan file diupload sesuai pada form yang
@@ -220,6 +242,10 @@
                       Bukti nilai yang dikeluarkan oleh mitra MBKM (Penyelenggara Kegiatan)
                       <a href="https://drive.google.com/file/d/1_RKVOoX1hd0RvQkzOicH9FXkOv2qZpiK/view" target="_blank">Lihat contoh ini.</a>
                     </li>
+                    <li>
+                      <strong>File KHS</strong><br>
+                      Lampirkan screenshoot KHS semester berjalan saat ini sebagai bukti bahwa matakuliah konversi sudah diambil saat KRS-an. 
+                     </li>
                   </ul>
                 </p>
               </div>
@@ -252,7 +278,7 @@
             <tbody>
                 <tr v-for='(user, index) in items'>                            
                     <td>
-                    <input  v-model="user.objective"  class="form-control" type="text" :disabled=true />
+                    <textarea  v-model="user.objective"  class="form-control" type="text" :disabled=true></textarea>
                     </td>
                     <td>
                     <input v-model="user.durasi" class="form-control" type="text"  :disabled=true />
@@ -372,6 +398,7 @@
     fileUrlSuratRekomendasi:"",
     fileUrlLaporan: "",
     fileUrlNilai: "",
+    fileUrlKhs: "",
     fileSertifikat:"",  
     fileKontrak:"",
     fileSuratRekomendasi:"",
@@ -405,6 +432,9 @@
     },
     openLaporan: function () {
         window.open(app.fileUrlLaporan, "_blank");
+    },
+    openKhs: function () {
+        window.open(app.fileUrlKhs, "_blank");
     },
     profileIsEmpty,
     submitEntry,
@@ -448,13 +478,7 @@
     onClickButtonCari,
     submitFileKontrak,
     submitFileSertifikat,
-    fetchDosen,
-    handleFileUploadSertifikat(event){
-        this.fileSertifikat = event.target.files[0];
-      },
-    handleFileUploadKontrak(event){
-        this.fileKontrak = event.target.files[0];
-      }
+    fetchDosen
    }  
   })
   function submitEntry(){
@@ -567,6 +591,7 @@
                     app.fileUrlSuratRekomendasi = _profil.bukti_rekomendasi;
                     app.fileUrlLaporan = _profil.bukti_laporan;
                     app.fileUrlNilai = _profil.bukti_nilai;
+                    app.fileUrlKhs = _profil.bukti_khs;
 
                     app.profileDraft.name=_profil.nama;
                     app.profileDraft.nim=_profil.nim;
